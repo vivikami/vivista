@@ -363,24 +363,19 @@ function playerShoot() {
   const p = state.player;
   if(!p.alive || p.ammo<=0) return;
 
-  // 最近敵への自動照準（範囲内に敵がいれば自動で向く）
-  if(!isTouchDevice()){
-    // PCはマウス座標を優先（すでにmousemoveで更新済み）
-    // 何もしない（facingはmousemoveが常に更新）
-  } else {
-    // タッチ操作: スティックで照準していなければ最近敵に向く
-    if(!attackStick.hasAimed){
-      let nearest=null, nd=Infinity;
-      for(const e of state.enemies){
-        if(!e.alive) continue;
-        const d=dist(p,e);
-        if(d<nd){nd=d;nearest=e;}
-      }
-      if(nearest && nd < p.range*1.3){
-        p.facing=Math.atan2(nearest.y-p.y, nearest.x-p.x);
-      }
+  // 最近敵への自動照準（タッチ時: 範囲内に敵がいれば自動で向く）
+  if(isTouchDevice()){
+    let nearest=null, nd=Infinity;
+    for(const e of state.enemies){
+      if(!e.alive) continue;
+      const d=dist(p,e);
+      if(d<nd){nd=d;nearest=e;}
+    }
+    if(nearest && nd < p.range*1.3){
+      p.facing=Math.atan2(nearest.y-p.y, nearest.x-p.x);
     }
   }
+  // PC: facingはmousemoveが常に更新
   const angle = p.facing;
 
   // ===== シャンパー: 8連続発射 =====
@@ -479,9 +474,11 @@ function update(dt) {
     const l=Math.sqrt(dx*dx+dy*dy);
     if(l>1){dx/=l;dy/=l;}
     p.walkAnim+=dt*8;
-    if(typeof moveStick==='undefined'||(!moveStick.dx&&!moveStick.dy)){
-      if(typeof attackStick==='undefined'||!attackStick.hasAimed) p.facing=Math.atan2(dy,dx);
+    if(isTouchDevice()){
+      // タッチ: 移動方向に照準を常に同期
+      p.facing = Math.atan2(dy, dx);
     }
+    // PC: facingはmousemoveが管理するので移動では上書きしない
   }
   const _spd = p.speed * (p._speedBuff||1);
   const nx=p.x+dx*_spd*dt, ny=p.y+dy*_spd*dt;

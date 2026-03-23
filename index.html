@@ -1002,10 +1002,14 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   border:2.5px solid rgba(255,80,80,0.35);
 }
 #attack-knob{
-  position:absolute;width:72px;height:72px;border-radius:50%;
-  background:rgba(229,57,53,0.65);border:2.5px solid rgba(255,120,120,0.8);
+  position:absolute;width:80px;height:80px;border-radius:50%;
+  background:rgba(229,57,53,0.75);border:3px solid rgba(255,120,120,0.9);
   top:50%;left:50%;transform:translate(-50%,-50%);
   pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;letter-spacing:1px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 12px rgba(229,57,53,0.5);
+  transition:transform .1s;
 }
 /* スーパースティック */
 #dpad-super{
@@ -1702,7 +1706,7 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   </div>
   <div class="dpad-zone" id="dpad-right" style="display:none">
     <div class="dpad-base" id="attack-base-ring"></div>
-    <div id="attack-knob"></div>
+    <div id="attack-knob">射撃</div>
   </div>
 </div>
 

@@ -36,17 +36,17 @@ function applyHandedness(){
   const dpadS = document.getElementById('dpad-super');
   if(!dpadL||!dpadR||!dpadS) return;
   if(handedness === 'right'){
-    // 右利き: dpad-left=攻撃(左), dpad-right=移動(右)
+    // 右利き: dpad-left=移動(左), dpad-right=射撃(右)
     dpadL.style.left  = '60px';  dpadL.style.right = '';
     dpadR.style.right = '60px';  dpadR.style.left  = '';
-    // 必殺=攻撃(左)の真上
-    dpadS.style.left  = '60px';  dpadS.style.right = '';
-  } else {
-    // 左利き: dpad-left=移動(左), dpad-right=攻撃(右)
-    dpadL.style.left  = '60px';  dpadL.style.right = '';
-    dpadR.style.right = '60px';  dpadR.style.left  = '';
-    // 必殺=攻撃(右)の真上
+    // 必殺=射撃(右)の真上
     dpadS.style.right = '60px';  dpadS.style.left  = '';
+  } else {
+    // 左利き: dpad-left=射撃(左), dpad-right=移動(右)
+    dpadL.style.left  = '60px';  dpadL.style.right = '';
+    dpadR.style.right = '60px';  dpadR.style.left  = '';
+    // 必殺=射撃(左)の真上
+    dpadS.style.left  = '60px';  dpadS.style.right = '';
   }
 }
 
@@ -89,8 +89,9 @@ function setupTouchControls(){
   const isLeft = handedness === 'left';
   // 右利き: 左=攻撃(武器), 右=移動
   // 左利き: 左=移動, 右=攻撃
-  const moveEl   = document.getElementById(isLeft ? 'dpad-left'  : 'dpad-right');
-  const attackEl = document.getElementById(isLeft ? 'dpad-right' : 'dpad-left');
+  // 右利き: 左=移動, 右=射撃 / 左利き: 右=移動, 左=射撃
+  const moveEl   = document.getElementById(isLeft ? 'dpad-right' : 'dpad-left');
+  const attackEl = document.getElementById(isLeft ? 'dpad-left'  : 'dpad-right');
   const superEl  = document.getElementById('dpad-super');
   if(!moveEl||!attackEl||!superEl) return;
 
@@ -143,33 +144,19 @@ function setupTouchControls(){
   moveEl.addEventListener('touchend',    e=>{e.preventDefault(); resetM();}, sig);
   moveEl.addEventListener('touchcancel', e=>{e.preventDefault(); resetM();}, sig);
 
-  // ---- ATTACK ----
+  // ---- FIRE BUTTON ----
+  let _fireTimer = null;
   attackEl.addEventListener('touchstart', e=>{
     e.preventDefault();
-    const t=e.changedTouches[0];
-    attackStick.tid=t.identifier; attackStick.active=true; attackStick.hasAimed=false;
-    attackStick.ox=t.clientX; attackStick.oy=t.clientY;
-    attackKnob.style.left='50%'; attackKnob.style.top='50%'; attackKnob.style.transform='translate(-50%,-50%)';
-  }, sig);
-  attackEl.addEventListener('touchmove', e=>{
-    e.preventDefault();
-    for(const t of e.changedTouches){
-      if(t.identifier!==attackStick.tid) continue;
-      const raw={x:t.clientX-attackStick.ox, y:t.clientY-attackStick.oy};
-      const len=Math.sqrt(raw.x*raw.x+raw.y*raw.y);
-      if(len>12) attackStick.hasAimed=true;
-      const c=clampKnob(raw.x,raw.y);
-      attackKnob.style.left=(90+c.x)+'px'; attackKnob.style.top=(90+c.y)+'px'; attackKnob.style.transform='translate(-50%,-50%)';
-      if(attackStick.hasAimed){
-        const angle=Math.atan2(raw.y,raw.x);
-        if(state.running&&state.player) state.player.facing=angle;
-      }
-    }
+    attackStick.active = true;
+    try{ playerShoot(); }catch(err){}
+    _fireTimer = setInterval(()=>{ if(attackStick.active) try{ playerShoot(); }catch(err){} }, 350);
+    attackKnob.style.transform='translate(-50%,-50%) scale(0.85)';
   }, sig);
   const resetA=()=>{
-    if(attackStick.active){ try{ playerShoot(); }catch(e){} }
-    attackStick.tid=null; attackStick.active=false; attackStick.hasAimed=false;
-    attackKnob.style.left='50%'; attackKnob.style.top='50%'; attackKnob.style.transform='translate(-50%,-50%)';
+    attackStick.active = false;
+    if(_fireTimer){ clearInterval(_fireTimer); _fireTimer=null; }
+    attackKnob.style.transform='translate(-50%,-50%)';
   };
   attackEl.addEventListener('touchend',    e=>{e.preventDefault(); resetA();}, sig);
   attackEl.addEventListener('touchcancel', e=>{e.preventDefault(); resetA();}, sig);

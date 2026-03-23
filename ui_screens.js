@@ -172,6 +172,7 @@ function startSelectedMode(){
 function beginGame(){
   hideAllScreens();
   document.getElementById('game-wrap').style.display='block';
+  document.getElementById('overlay').style.display='none';
   resizeCanvas();
   genMap();
 
