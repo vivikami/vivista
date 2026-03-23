@@ -657,7 +657,7 @@ function update(dt) {
     pt.life-=dt; if(pt.life<=0) state.particles.splice(i,1);
   }
 
-  const alive=state.enemies.filter(e=>e.alive).length;
+  const alive=state.enemies.filter(e=>e.alive&&!e.isFriendBot).length;
   if(alive===0) {endGame(true);return;}
 
   state.camX=Math.max(0,Math.min(MPX-W,p.x-W/2));
@@ -754,7 +754,12 @@ function draw() {
   const allEntities=[...state.enemies.filter(e=>e.alive), state.player.alive?state.player:null].filter(Boolean);
   allEntities.sort((a,b)=>a.y-b.y);
   for(const e of allEntities) {
-    if(!e.isPlayer&&inBush(e.x,e.y)) continue;
+    if(!e.isPlayer&&inBush(e.x,e.y)){
+      gctx.globalAlpha=0.3;
+      drawBrawler(gctx, e, false);
+      gctx.globalAlpha=1;
+      continue;
+    }
     drawBrawler(gctx, e, e===state.player);
   }
 
