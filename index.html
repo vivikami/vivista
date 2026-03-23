@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ブロスタ ショーダウン v14</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidden;width:100vw;height:100vh;}
+
+/* ===== HOME SCREEN ===== */
+#home-screen{
+  position:fixed;inset:0;z-index:100;display:none;flex-direction:column;
+  background:linear-gradient(180deg,#1a3a5c 0%,#2d6a9f 40%,#5ba3d0 70%,#a8d4f0 100%);
+  overflow:hidden;
+}
+/* 雪山背景 */
+#home-screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 200% 60% at 50% 110%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 30%, transparent 70%),
+    radial-gradient(ellipse 120% 40% at 20% 120%, rgba(200,230,255,0.7) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 35% at 80% 115%, rgba(200,230,255,0.6) 0%, transparent 55%);
+  z-index:0;
+}
+/* 星 */
+#home-screen::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:50%;pointer-events:none;z-index:0;
+  background-image:radial-gradient(1px 1px at 15% 20%,#fff 0%,transparent 100%),radial-gradient(1px 1px at 35% 10%,#fff 0%,transparent 100%),radial-gradient(1.5px 1.5px at 60% 15%,#fff 0%,transparent 100%),radial-gradient(1px 1px at 80% 8%,#fff 0%,transparent 100%),radial-gradient(1px 1px at 90% 25%,#fff 0%,transparent 100%),radial-gradient(1px 1px at 5% 35%,#fff 0%,transparent 100%),radial-gradient(1px 1px at 45% 30%,rgba(255,255,255,0.7) 0%,transparent 100%),radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,0.5) 0%,transparent 100%);
+}
+
+/* トップバー */
+.home-topbar{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;flex-shrink:0;
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);
+  gap:6px;flex-wrap:wrap;
+}
+.home-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#ffcc00;letter-spacing:3px;text-shadow:0 0 12px rgba(255,200,0,0.5);}
+.home-topbar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.home-chip{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.12);
+  border-radius:16px;padding:5px 10px;
+}
+.home-chip-num{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;}
+.home-trophy-num{color:#ffcc00;}
+.home-coins-num{color:#ffca28;}
+.home-gem-num{color:#66bb6a;}
+.home-drop-num{color:#ff9800;}
+
+/* プレイヤー名＋トロフィー */
+.home-player-info{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;padding:5px 12px;
+}
+.home-player-name-text{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:1px;}
+.home-trophy-inline{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#ffcc00;}
+
+/* メインエリア */
+.home-main{
+  position:relative;z-index:2;flex:1;
+  display:flex;flex-direction:column;align-items:center;
+  overflow:hidden;
+}
+
+/* キャラ大表示エリア */
+#home-char-stage{
+  position:relative;flex:1;width:100%;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+#home-char-canvas-big{
+  width:min(55vw,280px);height:min(55vw,280px);
+  position:relative;z-index:3;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  cursor:pointer;transition:transform .2s;
+}
+#home-char-canvas-big:hover{transform:scale(1.04);}
+/* キャラ台座 */
+#home-char-stage::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(45vw,220px);height:30px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.4) 0%,transparent 75%);
+  z-index:1;
+}
+
+/* 左サイドボタン */
+.home-left-btns{ display:none; }
+.home-side-btn{
+  width:72px;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);border-radius:14px;
+  padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:.18s;color:#fff;font-family:'Barlow Condensed',sans-serif;
+}
+.home-side-btn:hover{background:rgba(255,255,255,0.15);transform:scale(1.05);}
+.home-side-btn .sb-icon{font-size:24px;}
+.home-side-btn .sb-label{font-size:10px;color:#ccc;letter-spacing:1px;}
+.home-side-btn .sb-badge{
+  position:absolute;top:-5px;right:-5px;
+  background:#ef5350;color:#fff;border-radius:50%;
+  width:16px;height:16px;font-size:9px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* 右サイドボタン */
+.home-right-btns{ display:none; }
+
+/* バトルエリア（下部） */
+.home-battle-area{
+  position:relative;z-index:10;
+  width:100%;padding:10px 14px 14px;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;flex-direction:column;gap:8px;
+}
+.home-mode-row{
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+}
+.home-mode-icon-big{font-size:28px;}
+.home-mode-info{flex:1;}
+.home-mode-label{font-size:10px;color:#888;letter-spacing:2px;}
+.home-mode-name-big{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff;letter-spacing:2px;line-height:1.1;}
+.home-mode-desc-small{font-size:10px;color:#777;}
+
+#battle-btn{
+  background:linear-gradient(135deg,#ff6f00,#ffcc00);
+  color:#1a0d00;border:none;border-radius:14px;
+  padding:16px;font-family:'Bebas Neue',sans-serif;
+  font-size:26px;letter-spacing:4px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(255,150,0,0.5);
+  transition:all .18s;width:100%;
+}
+#battle-btn:hover{transform:scale(1.02);}
+#battle-btn:active{transform:scale(0.97);}
+
+/* ボトムナビ */
+.home-nav{
+  flex-shrink:0;display:flex;align-items:stretch;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  position:relative;z-index:10;
+  overflow-x:auto;
+}
+.home-nav::-webkit-scrollbar{display:none;}
+.nav-btn{
+  flex:1 0 auto;min-width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 8px;gap:4px;cursor:pointer;transition:.15s;border:none;background:transparent;
+  font-family:'Barlow Condensed',sans-serif;position:relative;
+}
+.nav-btn:hover{background:rgba(255,255,255,0.08);}
+.nav-btn:active{background:rgba(255,255,255,0.15);}
+.nav-icon{font-size:26px;}
+.nav-label{font-size:10px;color:#666;letter-spacing:0.5px;white-space:nowrap;font-weight:600;}
+.nav-btn.active .nav-label{color:#ffcc00;}
+.quest-badge{
+  position:absolute;top:4px;right:50%;transform:translateX(50%);margin-right:-14px;
+  background:#ef5350;color:#fff;border-radius:50%;
+  width:15px;height:15px;font-size:9px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* 選択なし時のプレースホルダー */
+#home-no-char{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:rgba(255,255,255,0.4);font-size:13px;letter-spacing:1px;
+  padding-bottom:20px;
+}
+
+/* 旧カード非表示 */
+.home-brawler-card{display:none;}
+.home-body{display:none;}
+.home-trophy,.home-coins{display:none;}
+
+/* ===== CHARACTER SELECT ===== */
+#select-screen{
+  position:fixed;inset:0;z-index:110;
+  background:linear-gradient(135deg,#0d0d1a 0%,#1a0d2e 50%,#0d1a0d 100%);
+  display:none;flex-direction:column;align-items:center;
+  padding-top:0;
+}
+.select-topbar{
+  width:100%;display:flex;align-items:center;padding:12px 16px;flex-shrink:0;
+  background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(255,255,255,0.07);gap:12px;
+}
+.select-back{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:#aaa;font-size:18px;padding:6px 14px;border-radius:8px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;
+}
+.select-back:hover{background:rgba(255,255,255,0.14);color:#fff;}
+.select-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:3px;}
+#select-screen h1{display:none;}
+#select-screen .sub{display:none;}
+
+#scroll-hint{display:flex;align-items:center;gap:10px;margin:10px 0 10px;flex-shrink:0;}
+.scroll-arrow{
+  width:32px;height:32px;border:1px solid rgba(255,255,255,0.2);border-radius:50%;
+  background:rgba(255,255,255,0.06);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#aaa;transition:.15s;user-select:none;
+}
+.scroll-arrow:hover{background:rgba(255,255,255,0.14);color:#fff;}
+#scroll-pos{font-size:12px;color:#555;letter-spacing:2px;min-width:60px;text-align:center;}
+
+#grid-wrap{
+  width:100%;flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:0 20px 16px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,200,0,0.3) transparent;
+}
+#grid-wrap::-webkit-scrollbar{width:4px;}
+#grid-wrap::-webkit-scrollbar-track{background:transparent;}
+#grid-wrap::-webkit-scrollbar-thumb{background:rgba(255,200,0,0.3);border-radius:2px;}
+
+.char-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+  max-width:860px;margin:0 auto;
+}
+@media(max-width:700px){.char-grid{grid-template-columns:repeat(3,1fr);}}
+
+.char-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.char-card::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:.2s;
+  background:radial-gradient(circle at 50% 30%,var(--glow) 0%,transparent 70%);
+}
+.char-card:hover{border-color:var(--col);transform:translateY(-3px);}
+.char-card:hover::before{opacity:0.15;}
+.char-card.selected{border-color:var(--col);border-width:2px;background:rgba(255,255,255,0.08);}
+.char-card.selected::before{opacity:0.2;}
+.char-preview{width:70px;height:70px;margin:0 auto 10px;position:relative;}
+.char-canvas{width:70px;height:70px;}
+.char-name{
+  font-family:'Bebas Neue',sans-serif;font-size:19px;color:#fff;
+  text-align:center;letter-spacing:2px;
+}
+.char-weapon{color:#777;font-size:11px;text-align:center;letter-spacing:1px;margin-top:1px;}
+.char-stats{display:flex;gap:6px;margin-top:8px;}
+.stat{flex:1;}
+.stat-label{font-size:9px;color:#555;letter-spacing:1px;}
+.stat-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:3px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:2px;transition:width .5s;}
+.char-rarity{
+  position:absolute;top:8px;right:8px;font-size:9px;letter-spacing:1px;
+  padding:2px 6px;border-radius:4px;font-weight:600;
+}
+
+#select-bottom{
+  flex-shrink:0;padding:12px 20px 20px;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  background:linear-gradient(0deg,#0d0d1a 60%,transparent);
+}
+#selected-preview{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:8px 16px;min-width:180px;
+}
+#sel-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:2px;}
+#sel-weapon{font-size:11px;color:#666;margin-top:1px;}
+#sel-canvas{width:40px;height:40px;flex-shrink:0;}
+
+#select-btn{
+  background:linear-gradient(135deg,#ffcc00,#ff9900);
+  color:#1a0d00;border:none;border-radius:12px;
+  padding:14px 52px;font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:3px;cursor:pointer;
+  box-shadow:0 4px 24px rgba(255,180,0,0.4);
+  transition:all .2s;
+}
+#select-btn:hover{transform:scale(1.05);box-shadow:0 6px 32px rgba(255,180,0,0.6);}
+#select-btn:disabled{opacity:0.4;cursor:default;transform:none;}
+
+/* ===== SHOP SCREEN ===== */
+#shop-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#0a0f1e 0%,#1a0d2e 100%);
+}
+.shop-topbar{
+  display:flex;align-items:center;padding:12px 16px;flex-shrink:0;gap:12px;
+  background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.shop-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:3px;}
+.shop-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;}
+.shop-section-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#888;letter-spacing:3px;margin-bottom:4px;}
+.shop-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
+.shop-item{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:.2s;
+  position:relative;overflow:hidden;
+}
+.shop-item:hover{border-color:rgba(255,200,0,0.4);background:rgba(255,200,0,0.06);transform:translateY(-2px);}
+.shop-item-icon{font-size:32px;margin-bottom:8px;}
+.shop-item-name{font-family:'Bebas Neue',sans-serif;font-size:15px;color:#fff;letter-spacing:1px;}
+.shop-item-desc{font-size:10px;color:#666;margin-top:3px;}
+.shop-item-price{
+  margin-top:10px;display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,200,0,0.15);border:1px solid rgba(255,200,0,0.3);
+  border-radius:8px;padding:4px 10px;font-family:'Bebas Neue',sans-serif;
+  font-size:14px;color:#ffcc00;
+}
+.shop-item.owned .shop-item-price{background:rgba(100,255,100,0.1);border-color:rgba(100,255,100,0.3);color:#4deb4d;}
+
+
+/* ===== GADGET DETAIL MODAL ===== */
+#gadget-modal{
+  position:fixed;inset:0;z-index:200;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+}
+#gadget-panel{
+  width:100%;max-width:480px;
+  background:linear-gradient(180deg,#1a1a2e 0%,#0d0d1a 100%);
+  border-top:1px solid rgba(255,255,255,0.12);
+  border-radius:20px 20px 0 0;
+  padding:24px 20px 32px;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.gm-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.gm-char-canvas{width:64px;height:64px;flex-shrink:0;}
+.gm-char-name{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;letter-spacing:2px;}
+.gm-char-rarity{font-size:11px;letter-spacing:2px;margin-top:2px;}
+.gm-section{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#666;letter-spacing:3px;margin:16px 0 8px;}
+.gadget-card{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;
+}
+.gadget-icon{font-size:28px;flex-shrink:0;}
+.gadget-info{flex:1;}
+.gadget-name{font-family:'Bebas Neue',sans-serif;font-size:17px;color:#fff;letter-spacing:1px;}
+.gadget-desc{font-size:11px;color:#888;margin-top:3px;}
+.gadget-buy-btn{
+  background:linear-gradient(135deg,#ff6f00,#ffcc00);
+  color:#1a0d00;border:none;border-radius:10px;
+  padding:8px 18px;font-family:'Bebas Neue',sans-serif;
+  font-size:14px;letter-spacing:2px;cursor:pointer;white-space:nowrap;
+  flex-shrink:0;transition:.15s;
+}
+.gadget-buy-btn:active{transform:scale(0.95);}
+.gadget-buy-btn.owned{background:linear-gradient(135deg,#2e7d32,#66bb6a);color:#fff;cursor:default;}
+.gadget-buy-btn.use-btn{background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;}
+.gm-close{
+  width:100%;margin-top:16px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  color:#aaa;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;
+  padding:12px;border-radius:12px;cursor:pointer;
+}
+#gadget-hud{
+  position:absolute;bottom:220px;right:68px;
+  width:52px;height:52px;display:none;
+  pointer-events:all;
+}
+#gadget-hud-btn{
+  width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.3);
+  background:rgba(0,0,0,0.6);font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;touch-action:manipulation;
+}
+#gadget-hud-btn:active{transform:scale(0.9);}
+#gadget-hud-btn.ready{border-color:#ffcc00;box-shadow:0 0 12px rgba(255,200,0,0.5);}
+#gadget-hud-cd{
+  position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:10px;color:#ffcc00;letter-spacing:1px;
+  white-space:nowrap;
+}
+
+
+/* ===== MODE SELECT SCREEN ===== */
+#mode-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#0a0f1e 0%,#0d1a0d 100%);
+}
+.mode-topbar{
+  display:flex;align-items:center;padding:12px 16px;flex-shrink:0;gap:12px;
+  background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.mode-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:3px;}
+.mode-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.mode-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;padding:20px;cursor:pointer;transition:.18s;
+  display:flex;align-items:center;gap:16px;
+}
+.mode-card:hover{transform:translateY(-2px);border-color:rgba(255,200,0,0.4);}
+.mode-icon{font-size:40px;flex-shrink:0;}
+.mode-info-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:2px;}
+.mode-info-desc{font-size:12px;color:#777;margin-top:4px;line-height:1.5;}
+.mode-badge{
+  font-size:10px;letter-spacing:2px;padding:3px 8px;border-radius:6px;
+  display:inline-block;margin-top:6px;
+}
+
+/* リロードHUD */
+#reload-score{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:14px;
+  padding:8px 20px;font-family:'Bebas Neue',sans-serif;font-size:22px;
+  color:#fff;letter-spacing:3px;pointer-events:none;display:none;
+}
+#respawn-timer{
+  position:absolute;inset:0;display:none;
+  align-items:center;justify-content:center;pointer-events:none;
+}
+#respawn-text{
+  font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;
+  text-shadow:0 0 20px rgba(255,100,100,0.8);letter-spacing:4px;
+}
+
+
+
+/* ===== QUEST SCREEN ===== */
+#quest-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#0a0f1e 0%,#1a0d2e 100%);
+}
+.quest-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:14px 16px;transition:.2s;
+}
+.quest-card.done{border-color:rgba(77,235,77,0.3);background:rgba(77,235,77,0.04);}
+/* ===== LUCKY DROP SCREEN ===== */
+#lucky-drop-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#1a0d2e 0%,#0a0f1e 100%);
+  gap:20px;
+}
+#drop-tier{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;}
+#drop-prize{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:3px;min-height:44px;}
+#drop-claim-btn{
+  background:linear-gradient(135deg,#ffcc00,#ff9900);color:#1a0d00;border:none;
+  border-radius:14px;padding:16px 48px;font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:3px;cursor:pointer;display:none;
+}
+
+
+
+/* ===== NAME INPUT SCREEN ===== */
+#name-screen{
+  position:fixed;inset:0;z-index:500;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#1a0d2e 0%,#0a0f1e 100%);
+  gap:24px;padding:24px;
+}
+#name-screen .ns-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:52px;color:#ffcc00;
+  letter-spacing:8px;text-shadow:0 0 30px rgba(255,200,0,0.5);
+}
+#name-screen .ns-sub{font-size:14px;color:#888;letter-spacing:3px;}
+#name-input{
+  width:100%;max-width:320px;
+  background:rgba(255,255,255,0.06);
+  border:2px solid rgba(255,200,0,0.3);border-radius:14px;
+  color:#fff;font-size:24px;padding:16px 20px;
+  font-family:'Bebas Neue',sans-serif;letter-spacing:4px;
+  text-align:center;outline:none;
+}
+#name-input:focus{border-color:#ffcc00;}
+#name-input::placeholder{color:rgba(255,255,255,0.2);}
+#name-start-btn{
+  width:100%;max-width:320px;
+  background:linear-gradient(135deg,#ffcc00,#ff9900);
+  color:#1a0d00;border:none;border-radius:14px;
+  padding:18px;font-family:'Bebas Neue',sans-serif;
+  font-size:24px;letter-spacing:4px;cursor:pointer;
+  box-shadow:0 6px 28px rgba(255,150,0,0.4);transition:.15s;
+}
+#name-start-btn:active{transform:scale(0.97);}
+
+
+
+
+/* ===== HOME PARTY SLOTS ===== */
+#home-party-row{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:10px 16px;flex-shrink:0;
+  background:rgba(0,0,0,0.35);
+  border-top:1px solid rgba(255,255,255,0.06);
+  position:relative;z-index:10;
+}
+.party-slot{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:.18s;
+}
+.party-slot:hover .party-avatar{transform:scale(1.08);}
+.party-avatar{
+  width:56px;height:56px;border-radius:50%;
+  border:2.5px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.05);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;transition:.18s;
+}
+.party-avatar.me{
+  border-color:#ffcc00;
+  box-shadow:0 0 10px rgba(255,200,0,0.4);
+}
+.party-avatar.filled{
+  border-color:#4fc3f7;
+  box-shadow:0 0 8px rgba(79,195,247,0.35);
+}
+.party-avatar.empty{
+  border-style:dashed;border-color:rgba(255,255,255,0.25);
+}
+.party-avatar .plus-icon{
+  font-size:22px;color:rgba(255,255,255,0.35);
+  line-height:1;
+}
+.party-label{
+  font-size:9px;letter-spacing:1px;color:#666;
+  max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;
+}
+.party-label.me{color:#ffcc00;}
+.party-label.filled{color:#4fc3f7;}
+.party-remove{
+  position:absolute;top:1px;right:1px;
+  width:14px;height:14px;border-radius:50%;
+  background:rgba(229,57,53,0.9);color:#fff;
+  font-size:8px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;
+}
+/* パーティ選択モーダル */
+#party-pick-modal{
+  position:fixed;inset:0;z-index:300;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+}
+.party-pick-panel{
+  width:100%;max-width:480px;
+  background:linear-gradient(180deg,#1a1a2e,#0d0d1a);
+  border-top:1px solid rgba(255,255,255,0.12);
+  border-radius:20px 20px 0 0;
+  padding:18px 16px 28px;
+  display:flex;flex-direction:column;gap:10px;
+  max-height:65vh;
+  animation:slideUp .22s ease;
+}
+.party-pick-title{
+  font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:3px;
+  padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.party-pick-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.party-pick-item{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:10px 14px;cursor:pointer;transition:.15s;
+}
+.party-pick-item:hover{background:rgba(79,195,247,0.1);border-color:#4fc3f7;}
+.party-pick-item.remove-item:hover{background:rgba(229,57,53,0.1);border-color:#ef5350;}
+.ppi-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;overflow:hidden;border:1.5px solid rgba(255,255,255,0.15);}
+.ppi-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;}
+.ppi-detail{font-size:10px;color:#666;margin-top:1px;}
+.party-pick-close{
+  text-align:center;padding:12px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;cursor:pointer;color:#aaa;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;
+}
+
+/* ===== FRIEND SLOTS IN SELECT ===== */
+#friend-slots-bar{
+  flex-shrink:0;padding:10px 16px;
+  background:rgba(0,0,0,0.5);border-top:1px solid rgba(255,255,255,0.07);
+  display:flex;align-items:center;gap:10px;overflow-x:auto;
+}
+#friend-slots-bar::-webkit-scrollbar{display:none;}
+.friend-slot-label{
+  font-family:'Bebas Neue',sans-serif;font-size:12px;color:#666;letter-spacing:2px;
+  white-space:nowrap;flex-shrink:0;
+}
+.friend-slot{
+  flex-shrink:0;width:64px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:.15s;
+}
+.friend-slot:hover .friend-slot-avatar{border-color:rgba(255,255,255,0.4);}
+.friend-slot-avatar{
+  width:52px;height:52px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;transition:.15s;
+}
+.friend-slot-avatar.filled{border-color:#4fc3f7;}
+.friend-slot-avatar.empty{border-style:dashed;}
+.friend-slot-name{
+  font-size:9px;color:#666;letter-spacing:1px;text-align:center;
+  max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.friend-slot-name.filled{color:#4fc3f7;}
+.friend-slot-remove{
+  position:absolute;top:0;right:0;
+  background:rgba(229,57,53,0.85);color:#fff;border-radius:50%;
+  width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;
+}
+
+/* フレンド選択モーダル */
+#friend-pick-modal{
+  position:fixed;inset:0;z-index:300;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+}
+.friend-pick-panel{
+  width:100%;max-width:480px;
+  background:#1a1a2e;border-top:1px solid rgba(255,255,255,0.12);
+  border-radius:20px 20px 0 0;padding:20px;
+  display:flex;flex-direction:column;gap:10px;max-height:60vh;
+}
+.friend-pick-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:3px;}
+.friend-pick-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.friend-pick-item{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:10px 14px;cursor:pointer;transition:.15s;
+}
+.friend-pick-item:hover{background:rgba(79,195,247,0.1);border-color:#4fc3f7;}
+.friend-pick-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;border:1px solid rgba(255,255,255,0.2);}
+.friend-pick-info{flex:1;}
+.friend-pick-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:1px;}
+.friend-pick-detail{font-size:10px;color:#666;}
+.friend-pick-close{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  color:#aaa;border-radius:10px;padding:12px;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;text-align:center;
+}
+
+
+
+
+
+/* ===== LEVEL SYSTEM ===== */
+#home-level-badge{
+  display:flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,rgba(255,150,0,0.25),rgba(255,100,0,0.15));
+  border:1px solid rgba(255,150,0,0.4);
+  border-radius:12px;padding:4px 9px;cursor:pointer;
+}
+.level-num{
+  font-family:'Bebas Neue',sans-serif;font-size:16px;
+  color:#ffaa00;letter-spacing:1px;
+}
+.level-bar-wrap{
+  width:36px;height:5px;background:rgba(255,255,255,0.1);
+  border-radius:3px;overflow:hidden;
+}
+.level-bar-fill{
+  height:100%;background:linear-gradient(90deg,#ff6f00,#ffcc00);
+  border-radius:3px;transition:width .4s ease;
+}
+/* レベルアップエフェクト */
+#levelup-toast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:9999;display:none;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.85);border:2px solid #ffcc00;border-radius:20px;
+  padding:28px 40px;pointer-events:none;
+  animation:levelupAnim .5s ease;
+}
+@keyframes levelupAnim{
+  0%{transform:translate(-50%,-50%) scale(0.5);opacity:0;}
+  60%{transform:translate(-50%,-50%) scale(1.1);}
+  100%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+}
+#levelup-toast .lu-title{
+  font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ffcc00;letter-spacing:4px;
+}
+#levelup-toast .lu-level{
+  font-family:'Bebas Neue',sans-serif;font-size:52px;color:#fff;letter-spacing:2px;
+}
+#levelup-toast .lu-sub{font-size:12px;color:#aaa;letter-spacing:2px;}
+
+/* ===== ONLINE FEATURE ===== */
+.online-dot{
+  width:8px;height:8px;border-radius:50%;background:#4deb4d;
+  box-shadow:0 0 6px #4deb4d;display:inline-block;margin-right:4px;
+}
+.online-dot.away{background:#ffcc00;box-shadow:0 0 6px #ffcc00;}
+.online-dot.offline{background:#555;box-shadow:none;}
+#online-status-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 12px;background:rgba(0,0,0,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:10px;color:#666;letter-spacing:1px;
+  flex-shrink:0;position:relative;z-index:10;
+}
+.online-count{color:#4deb4d;font-family:'Bebas Neue',sans-serif;font-size:13px;}
+.firebase-setup-banner{
+  background:rgba(255,150,0,0.15);border:1px solid rgba(255,150,0,0.3);
+  border-radius:8px;padding:6px 10px;font-size:10px;color:#ffcc00;
+  cursor:pointer;
+}
+/* オンラインユーザーリスト */
+.online-user-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:8px 12px;
+}
+.online-user-name{font-family:'Bebas Neue',sans-serif;font-size:15px;color:#fff;letter-spacing:1px;}
+.online-user-detail{font-size:10px;color:#555;}
+.online-user-trophy{font-size:11px;color:#ffcc00;}
+
+/* ===== FRIEND SCREEN ===== */
+#friend-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#0a0f1e 0%,#1a0d2e 100%);
+}
+.friend-section{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#888;letter-spacing:3px;margin:16px 0 8px;padding:0 4px;}
+.friend-card{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;
+}
+.friend-avatar{
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  border:2px solid rgba(255,255,255,0.2);
+}
+.friend-info{flex:1;}
+.friend-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:1px;}
+.friend-detail{font-size:11px;color:#666;margin-top:2px;}
+.friend-trophy{font-size:12px;color:#ffcc00;margin-top:2px;}
+.friend-delete{
+  background:rgba(229,57,53,0.18);border:1px solid rgba(229,57,53,0.35);
+  color:#ef5350;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;
+  transition:.15s;flex-shrink:0;
+}
+.friend-delete:hover{background:rgba(229,57,53,0.35);}
+.friend-add-area{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;
+}
+.friend-add-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:2px;}
+.friend-add-desc{font-size:11px;color:#666;}
+.friend-code-input{
+  width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;color:#4fc3f7;font-size:11px;padding:10px 12px;
+  font-family:monospace;resize:none;height:60px;
+}
+.friend-code-input:focus{outline:none;border-color:#4fc3f7;}
+.friend-add-btn{
+  background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;border:none;
+  border-radius:10px;padding:12px;font-family:'Bebas Neue',sans-serif;
+  font-size:16px;letter-spacing:2px;cursor:pointer;transition:.15s;
+}
+.friend-add-btn:active{transform:scale(0.97);}
+.my-code-area{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;
+}
+.my-code-label{font-size:11px;color:#888;}
+.my-code-text{
+  font-family:monospace;font-size:10px;color:#ffcc00;word-break:break-all;
+  background:rgba(0,0,0,0.4);border-radius:8px;padding:8px;max-height:48px;overflow:hidden;
+  cursor:pointer;
+}
+.my-code-copy{
+  background:rgba(255,200,0,0.15);border:1px solid rgba(255,200,0,0.3);color:#ffcc00;
+  border-radius:8px;padding:8px;font-size:12px;letter-spacing:1px;cursor:pointer;text-align:center;
+}
+
+/* ===== QUEST REWARD MODAL ===== */
+#quest-reward-modal{
+  position:fixed;inset:0;z-index:9000;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+}
+.reward-panel{
+  background:linear-gradient(180deg,#1a1a2e,#0d0d1a);
+  border:1px solid rgba(255,200,0,0.3);border-radius:24px;
+  padding:32px 24px;width:88%;max-width:340px;text-align:center;
+}
+.reward-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#ffcc00;letter-spacing:4px;margin-bottom:4px;}
+.reward-quest-name{font-size:13px;color:#888;margin-bottom:20px;}
+.reward-coin-area{position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:18px;}
+.reward-coin-pile{font-size:52px;line-height:1;margin-bottom:4px;}
+.reward-amount{
+  font-family:'Bebas Neue',sans-serif;font-size:38px;
+  color:#ffcc00;letter-spacing:3px;
+  text-shadow:0 0 20px rgba(255,200,0,0.6);
+}
+.reward-claim-btn{
+  width:100%;background:linear-gradient(135deg,#ffcc00,#ff9900);
+  color:#1a0d00;border:none;border-radius:14px;
+  padding:16px;font-family:'Bebas Neue',sans-serif;
+  font-size:20px;letter-spacing:3px;cursor:pointer;transition:.15s;
+}
+.reward-claim-btn:active{transform:scale(0.97);}
+/* クエストナビバッジ */
+.quest-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:#ef5350;color:#fff;border-radius:50%;
+  width:16px;height:16px;font-size:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;pointer-events:none;
+}
+.nav-btn{position:relative;}
+
+/* ===== ADMIN / RESET MODALS ===== */
+#admin-modal, #reset-modal{
+  position:fixed;inset:0;z-index:400;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+}
+.admin-panel{
+  background:#0d0d1a;border:1px solid rgba(255,50,50,0.3);
+  border-radius:20px;padding:28px 24px;width:90%;max-width:360px;
+}
+.admin-panel h3{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;color:#ff5252;
+  letter-spacing:3px;margin-bottom:6px;
+}
+.admin-panel p{font-size:12px;color:#666;margin-bottom:16px;}
+.admin-input{
+  width:100%;background:rgba(0,0,0,0.5);
+  border:1px solid rgba(255,50,50,0.3);border-radius:10px;
+  color:#ff5252;font-size:22px;padding:12px 16px;
+  font-family:'Bebas Neue',sans-serif;letter-spacing:6px;
+  text-align:center;margin-bottom:14px;
+}
+.admin-input:focus{outline:none;border-color:#ff5252;}
+.admin-btns{display:flex;gap:10px;}
+.admin-btn{
+  flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;transition:.15s;
+}
+.admin-btn.confirm{background:linear-gradient(135deg,#b71c1c,#ef5350);color:#fff;}
+.admin-btn.cancel{background:rgba(255,255,255,0.08);color:#aaa;border:1px solid rgba(255,255,255,0.12);}
+.admin-btn:active{transform:scale(0.97);}
+/* リセット確認 */
+.reset-panel{
+  background:#0d0d1a;border:1px solid rgba(255,100,0,0.3);
+  border-radius:20px;padding:28px 24px;width:90%;max-width:340px;text-align:center;
+}
+.reset-panel h3{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#ff9800;letter-spacing:3px;margin-bottom:8px;}
+.reset-panel p{font-size:13px;color:#888;margin-bottom:20px;line-height:1.6;}
+.reset-btns{display:flex;gap:12px;}
+.reset-yes{flex:1;padding:14px;background:linear-gradient(135deg,#b71c1c,#ef5350);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+.reset-no{ flex:1;padding:14px;background:rgba(255,255,255,0.08);color:#aaa;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+
+/* ===== SAVE / LOAD MODAL ===== */
+.code-modal{
+  position:fixed;inset:0;z-index:300;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);
+}
+.code-panel{
+  background:#1a1a2e;border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;padding:24px 20px;width:90%;max-width:420px;
+}
+.code-panel h3{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;
+  letter-spacing:3px;margin-bottom:6px;
+}
+.code-panel p{font-size:12px;color:#666;margin-bottom:14px;}
+.code-textarea{
+  width:100%;height:90px;background:rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.15);border-radius:10px;
+  color:#ffcc00;font-size:11px;padding:10px;resize:none;
+  font-family:monospace;letter-spacing:0.5px;line-height:1.5;
+}
+.code-panel-btns{display:flex;gap:10px;margin-top:12px;}
+.code-btn{
+  flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;
+  transition:.15s;
+}
+.code-btn.primary{background:linear-gradient(135deg,#ffcc00,#ff9900);color:#1a0d00;}
+.code-btn.secondary{background:rgba(255,255,255,0.08);color:#aaa;border:1px solid rgba(255,255,255,0.12);}
+.code-btn:active{transform:scale(0.97);}
+
+/* ===== RANKING SCREEN ===== */
+#ranking-screen{
+  position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+  background:linear-gradient(160deg,#0a0f1e 0%,#1a0d2e 100%);
+}
+.ranking-item{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;padding:12px 16px;
+}
+.ranking-item.me{background:rgba(255,200,0,0.08);border-color:rgba(255,200,0,0.3);}
+.ranking-rank{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;
+  width:32px;text-align:center;flex-shrink:0;
+}
+.ranking-rank.gold{color:#ffcc00;}
+.ranking-rank.silver{color:#aaa;}
+.ranking-rank.bronze{color:#cd7f32;}
+.ranking-name{font-family:'Bebas Neue',sans-serif;font-size:17px;color:#fff;letter-spacing:1px;}
+.ranking-trophy{font-size:12px;color:#ffcc00;margin-top:2px;}
+.ranking-brawler{font-size:10px;color:#555;}
+
+/* ===== GAME ===== */
+#game-wrap{position:fixed;inset:0;display:none;}
+#game-canvas{display:block;width:100%;height:100%;}
+
+/* HUD */
+#hud{
+  position:absolute;inset:0;pointer-events:none;
+}
+#hud-tl{
+  position:absolute;top:14px;left:14px;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:14px;
+  padding:12px 16px;min-width:160px;
+}
+.hud-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:2px;}
+.hud-bar-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.hud-bar-bg{flex:1;height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;}
+.hud-bar-fill{height:100%;border-radius:4px;transition:width .12s;}
+.hud-bar-label{font-size:11px;color:#aaa;width:20px;text-align:right;}
+.ammo-row{display:flex;gap:5px;margin-top:8px;}
+.ammo-pip{width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.15);transition:.15s;}
+.ammo-pip.full{background:#ffcc00;box-shadow:0 0 6px rgba(255,200,0,0.6);}
+
+#hud-tr{
+  position:absolute;top:14px;right:14px;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:14px;
+  padding:12px 16px;text-align:right;
+}
+#hud-alive{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;}
+#hud-alive-label{font-size:11px;color:#666;letter-spacing:2px;}
+
+#hud-bot{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:16px;
+}
+#super-btn-wrap{
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:14px;
+  padding:10px 20px;display:flex;align-items:center;gap:12px;
+}
+#super-gauge-bg{width:120px;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden;}
+#super-gauge-fill{height:100%;background:linear-gradient(90deg,#ffcc00,#ff6600);border-radius:5px;transition:width .1s;}
+#super-label{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#888;letter-spacing:1px;}
+#super-ready{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#ffcc00;letter-spacing:2px;display:none;}
+
+#gem-display{
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,200,0,0.2);border-radius:14px;
+  padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:24px;
+  color:#ffca28;letter-spacing:2px;
+}
+
+#kill-feed{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  pointer-events:none;
+}
+.kill-msg{
+  background:rgba(0,0,0,0.75);border-radius:8px;
+  padding:4px 14px;font-size:13px;color:#ccc;letter-spacing:1px;
+  animation:fadeup 3s forwards;white-space:nowrap;
+}
+@keyframes fadeup{0%{opacity:0;transform:translateY(8px);}10%{opacity:1;transform:none;}80%{opacity:1;}100%{opacity:0;transform:translateY(-8px);}}
+
+#overlay{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:10;
+}
+#overlay h2{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:6px;margin-bottom:8px;}
+#overlay p{color:#aaa;font-size:16px;letter-spacing:2px;margin-bottom:28px;}
+#overlay button{
+  background:linear-gradient(135deg,#ffcc00,#ff9900);color:#1a0d00;border:none;
+  border-radius:12px;padding:14px 48px;font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:3px;cursor:pointer;transition:.2s;
+}
+#overlay button:hover{transform:scale(1.05);}
+
+#hint{
+  position:absolute;bottom:16px;right:16px;
+  background:rgba(0,0,0,0.6);border-radius:10px;padding:8px 14px;
+  font-size:12px;color:#555;letter-spacing:1px;pointer-events:none;
+}
+
+/* ===== DUAL STICK TOUCH CONTROLS ===== */
+.dpad-zone{
+  position:absolute;bottom:20px;
+  width:180px;height:180px;
+  pointer-events:all;touch-action:none;
+}
+#dpad-left{ left:60px; }
+#dpad-right{ right:60px; }
+.dpad-base{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  border:2.5px solid rgba(255,255,255,0.18);
+}
+#move-knob{
+  position:absolute;width:72px;height:72px;border-radius:50%;
+  background:rgba(255,255,255,0.28);border:2.5px solid rgba(255,255,255,0.55);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+#attack-base-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(229,57,53,0.10);
+  border:2.5px solid rgba(255,80,80,0.35);
+}
+#attack-knob{
+  position:absolute;width:72px;height:72px;border-radius:50%;
+  background:rgba(229,57,53,0.65);border:2.5px solid rgba(255,120,120,0.8);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+/* スーパースティック */
+#dpad-super{
+  position:absolute;bottom:220px;
+  right:60px;
+  width:130px;height:130px;
+  pointer-events:all;touch-action:none;
+  transition:left .15s,right .15s;
+}
+#super-base-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(255,180,0,0.12);
+  border:2.5px solid rgba(255,200,0,0.45);
+  transition:background .15s,border-color .15s;
+}
+#super-base-ring.ready{
+  background:rgba(255,200,0,0.25);
+  border-color:rgba(255,220,0,0.9);
+  box-shadow:0 0 16px rgba(255,180,0,0.5);
+  animation:superPulse .6s ease-in-out infinite alternate;
+}
+#super-knob{
+  position:absolute;width:56px;height:56px;border-radius:50%;
+  background:rgba(255,180,0,0.55);border:2px solid rgba(255,220,0,0.7);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;font-size:11px;color:#1a0d00;
+  display:flex;align-items:center;justify-content:center;letter-spacing:1px;
+}
+#super-knob.ready{
+  background:rgba(255,210,0,0.95);
+  border-color:#fff;
+}
+@keyframes superPulse{from{transform:translate(-50%,-50%) scale(1);}to{transform:translate(-50%,-50%) scale(1.12);}}
+#trophy-display{
+  position:absolute;top:14px;left:14px;
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,200,0,0.25);
+  border-radius:12px;padding:8px 14px;
+  display:flex;align-items:center;gap:8px;
+  pointer-events:none;
+}
+#trophy-icon{font-size:18px;}
+#trophy-count{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;
+  color:#ffcc00;letter-spacing:2px;
+}
+#trophy-label{font-size:10px;color:#888;letter-spacing:1px;margin-top:1px;}
+</style>
+
+
+<!-- Firebase SDK -->
+<script type="module">
+  // ★ここにFirebaseの設定を貼り付けてください★
+  // firebaseConfig を下記に入力すると自動でオンライン機能が有効になります
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, remove, serverTimestamp, push, onDisconnect }
+    from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+  // ↓↓↓ FirebaseコンソールのfirebaseConfigをここに貼り付け ↓↓↓
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHZM2DBi4MTzJkf_Y-fWo3iw--8BTfjSI",
+    authDomain: "vivista-aa8a8.firebaseapp.com",
+    databaseURL: "https://vivista-aa8a8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "vivista-aa8a8",
+    storageBucket: "vivista-aa8a8.firebasestorage.app",
+    messagingSenderId: "176975870921",
+    appId: "1:176975870921:web:ddaa51ae9fe777c3e38618"
+  };
+  // ↑↑↑ ここまで ↑↑↑
+
+  let app = null, db = null;
+  let myPresenceRef = null;
+  let onlineUpdateInterval = null;
+
+  function isFirebaseConfigured(){
+    return firebaseConfig.databaseURL && firebaseConfig.databaseURL.length > 0;
+  }
+
+  window.initFirebase = function(){
+    if(!isFirebaseConfigured()){
+      console.warn("Firebase未設定: firebaseConfigを入力してください");
+      return false;
+    }
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+      window._db = db;
+      window._ref = ref;
+      window._set = set;
+      window._get = get;
+      window._onValue = onValue;
+      window._remove = remove;
+      window._serverTimestamp = serverTimestamp;
+      window._push = push;
+      window._onDisconnect = onDisconnect;
+      window._firebaseReady = true;
+      console.log("Firebase初期化成功");
+      return true;
+    } catch(e){
+      console.error("Firebase初期化失敗:", e);
+      return false;
+    }
+  };
+
+  // ページ読み込み後に初期化
+  window.addEventListener('load', ()=>{
+    if(isFirebaseConfigured()){
+      window.initFirebase();
+      setTimeout(()=>{ if(window._firebaseReady && window.startOnlinePresence) window.startOnlinePresence(); }, 500);
+    }
+  });
+</script>
+
+</head>
+<body>
+
+<!-- GADGET MODAL -->
+<div id="gadget-modal" onclick="closeGadgetModal(event)">
+  <div id="gadget-panel">
+    <div class="gm-header">
+      <canvas class="gm-char-canvas" id="gm-canvas"></canvas>
+      <div>
+        <div class="gm-char-name" id="gm-name">—</div>
+        <div class="gm-char-rarity" id="gm-rarity">—</div>
+      </div>
+    </div>
+    <div class="gm-section">ガジェット</div>
+    <div class="gadget-card" id="gadget-card">
+      <div class="gadget-icon" id="gm-gadget-icon">❓</div>
+      <div class="gadget-info">
+        <div class="gadget-name" id="gm-gadget-name">—</div>
+        <div class="gadget-desc" id="gm-gadget-desc">—</div>
+      </div>
+      <button class="gadget-buy-btn" id="gm-gadget-btn" onclick="buyGadgetFromModal()">🪙 800</button>
+    </div>
+    <button class="gm-close" onclick="closeGadgetModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- ADMIN CODE MODAL -->
+<div id="admin-modal">
+  <div class="admin-panel">
+    <!-- ログイン前 -->
+    <div id="admin-login-view">
+      <h3>🔐 管理者パネル</h3>
+      <p>コードを入力してログインしてください</p>
+      <input class="admin-input" id="admin-input" type="password" maxlength="10" placeholder="コードを入力"
+        onkeydown="if(event.key==='Enter') checkAdminCode(this.value)">
+      <div class="admin-btns">
+        <button class="admin-btn confirm" onclick="checkAdminCode(document.getElementById('admin-input').value)">ログイン</button>
+        <button class="admin-btn cancel" onclick="document.getElementById('admin-modal').style.display='none'">キャンセル</button>
+      </div>
+    </div>
+    <!-- ログイン後 -->
+    <div id="admin-loggedin-view" style="display:none;">
+      <h3 style="color:#ff4081;">👑 管理者ログイン中</h3>
+      <p style="color:#aaa;font-size:12px;margin-bottom:14px;">すべてのキャラクターが解放されています</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="admin-btn confirm" style="background:linear-gradient(135deg,#1565c0,#42a5f5);" onclick="adminGiveResources()">🪙 リソース追加</button>
+        <button class="admin-btn" style="background:rgba(229,57,53,0.2);border:1px solid rgba(229,57,53,0.5);color:#ef5350;" onclick="adminLogout()">🚪 ログアウト（元に戻す）</button>
+        <button class="admin-btn cancel" onclick="document.getElementById('admin-modal').style.display='none'">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESET CONFIRM MODAL -->
+<div id="reset-modal">
+  <div class="reset-panel">
+    <h3>⚠️ リセット確認</h3>
+    <p>本当にすべてのデータをリセットしますか？<br>トロフィー・コイン・エメラルド・<br>解放キャラ・購入内容がすべて消えます。</p>
+    <div class="reset-btns">
+      <button class="reset-yes" onclick="doReset()">はい</button>
+      <button class="reset-no"  onclick="document.getElementById('reset-modal').style.display='none'">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTY PICK MODAL -->
+<div id="party-pick-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="party-pick-panel">
+    <div class="party-pick-title" id="party-pick-title">👥 フレンドを選択</div>
+    <div class="party-pick-list" id="party-pick-list"></div>
+    <div class="party-pick-close" onclick="document.getElementById('party-pick-modal').style.display='none'">閉じる</div>
+  </div>
+</div>
+
+<!-- FRIEND PICK MODAL -->
+<div id="friend-pick-modal" onclick="closeFriendPick(event)">
+  <div class="friend-pick-panel">
+    <div class="friend-pick-title">👥 フレンドを選択</div>
+    <div class="friend-pick-list" id="friend-pick-list"></div>
+    <div class="friend-pick-close" onclick="document.getElementById('friend-pick-modal').style.display='none'">閉じる</div>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div class="code-modal" id="rename-modal">
+  <div class="code-panel">
+    <h3 style="color:#ffcc00;margin-bottom:6px;">✏️ 名前を変更</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;">新しい名前を入力してください（最大12文字）</p>
+    <input id="rename-input" type="text" maxlength="12"
+      style="width:100%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:16px;padding:10px 12px;font-family:'Barlow Condensed',sans-serif;outline:none;"
+      placeholder="プレイヤー名"
+      onkeydown="if(event.key==='Enter') confirmRename()">
+    <div class="code-panel-btns" style="margin-top:12px;">
+      <button class="code-btn primary" onclick="confirmRename()">✅ 変更する</button>
+      <button class="code-btn secondary" onclick="document.getElementById('rename-modal').style.display='none'">キャンセル</button>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">
+      <button onclick="document.getElementById('rename-modal').style.display='none'; openHandModal();"
+        style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#aaa;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;">
+        ✋ 利き手を変更する
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HAND CHANGE MODAL -->
+<div class="code-modal" id="hand-modal">
+  <div class="code-panel" style="max-width:340px;">
+    <h3 style="color:#ffcc00;margin-bottom:6px;">✋ 利き手を変更</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:16px;">タッチ操作のボタン配置が変わります</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:16px;">
+      <div id="hand-modal-right" onclick="changeHandModal('right')"
+        style="flex:1;padding:14px 8px;border-radius:14px;border:2px solid rgba(255,200,0,0.7);background:rgba(255,200,0,0.15);cursor:pointer;text-align:center;transition:.15s;">
+        <div style="font-size:32px;">🤜</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#ffcc00;letter-spacing:2px;margin-top:4px;">右利き</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">左:攻撃 右:移動</div>
+      </div>
+      <div id="hand-modal-left" onclick="changeHandModal('left')"
+        style="flex:1;padding:14px 8px;border-radius:14px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);cursor:pointer;text-align:center;transition:.15s;">
+        <div style="font-size:32px;">🤛</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#aaa;letter-spacing:2px;margin-top:4px;">左利き</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">左:移動 右:攻撃</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="code-btn primary" onclick="confirmHandChange()" style="flex:1;padding:12px;border-radius:10px;border:none;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;">決定</button>
+      <button class="code-btn secondary" onclick="document.getElementById('hand-modal').style.display='none'" style="flex:1;">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVELUP TOAST -->
+<div id="levelup-toast">
+  <div class="lu-title">LEVEL UP!</div>
+  <div class="lu-level">Lv <span id="lu-level-num">2</span></div>
+  <div class="lu-sub">次のレベルまであと <span id="lu-next-wins">10</span> 回1位</div>
+</div>
+
+<!-- SAVE CODE MODAL -->
+<div class="code-modal" id="save-code-modal">
+  <div class="code-panel">
+    <h3>💾 セーブコード</h3>
+    <p>このコードをコピーして保存してください。ロード時に使います。</p>
+    <textarea class="code-textarea" id="save-code-text" readonly></textarea>
+    <div class="code-panel-btns">
+      <button class="code-btn primary" onclick="copyCode()">📋 コピー</button>
+      <button class="code-btn secondary" onclick="document.getElementById('save-code-modal').style.display='none'">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAD CODE MODAL -->
+<div class="code-modal" id="load-code-modal">
+  <div class="code-panel">
+    <h3>📂 ロード</h3>
+    <p>セーブコードを貼り付けてロードしてください。</p>
+    <textarea class="code-textarea" id="load-code-input" placeholder="セーブコードをここに貼り付け..."></textarea>
+    <div class="code-panel-btns">
+      <button class="code-btn primary" onclick="doLoad()">✅ ロード</button>
+      <button class="code-btn secondary" onclick="document.getElementById('load-code-modal').style.display='none'">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODE SELECT SCREEN -->
+<div id="mode-screen" style="display:none">
+  <div class="mode-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="mode-title">モード選択</div>
+  </div>
+  <div class="mode-body">
+    <div class="mode-card" onclick="selectMode('royale')">
+      <div class="mode-icon">⚔️</div>
+      <div>
+        <div class="mode-info-name">バトルロワイヤル</div>
+        <div class="mode-info-desc">10人で最後まで生き残れ。<br>毒ガスが縮まるぞ。</div>
+        <span class="mode-badge" style="background:rgba(255,100,0,0.2);color:#ff7043;">10人対戦</span>
+      </div>
+    </div>
+
+
+
+  </div>
+</div>
+
+<!-- NAME INPUT SCREEN -->
+<div id="name-screen" style="display:none">
+  <div class="ns-logo">BRAWL</div>
+  <div class="ns-sub">あなたの名前を入力してください</div>
+  <input id="name-input" type="text" maxlength="12" placeholder="プレイヤー名"
+    onkeydown="if(event.key==='Enter')confirmName()">
+  <div style="width:100%;max-width:320px;margin-top:18px;">
+    <div style="font-size:11px;color:#888;letter-spacing:2px;margin-bottom:10px;text-align:center;">利き手を選んでください</div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <div id="hand-right" onclick="selectHand('right')"
+        style="flex:1;max-width:130px;padding:14px 8px;border-radius:14px;border:2px solid rgba(255,200,0,0.7);background:rgba(255,200,0,0.15);cursor:pointer;text-align:center;transition:.15s;">
+        <div style="font-size:32px;">🤜</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#ffcc00;letter-spacing:2px;margin-top:4px;">右利き</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">左:攻撃 右:移動</div>
+      </div>
+      <div id="hand-left" onclick="selectHand('left')"
+        style="flex:1;max-width:130px;padding:14px 8px;border-radius:14px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);cursor:pointer;text-align:center;transition:.15s;">
+        <div style="font-size:32px;">🤛</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#aaa;letter-spacing:2px;margin-top:4px;">左利き</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">左:移動 右:攻撃</div>
+      </div>
+    </div>
+  </div>
+  <button id="name-start-btn" onclick="confirmName()">スタート！</button>
+</div>
+
+<!-- QUEST REWARD MODAL -->
+<div id="quest-reward-modal">
+  <div class="reward-panel">
+    <div class="reward-title">🎯 クエスト達成！</div>
+    <div class="reward-quest-name" id="reward-quest-name">—</div>
+    <div class="reward-coin-area">
+      <div class="reward-coin-pile" id="reward-icon">🪙🪙🪙</div>
+      <div class="reward-amount" id="reward-amount">+0</div>
+    </div>
+    <button class="reward-claim-btn" id="reward-claim-btn" onclick="claimQuestReward()">受け取る！</button>
+  </div>
+</div>
+
+<!-- FRIEND SCREEN -->
+<div id="friend-screen" style="display:none">
+  <div class="mode-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="mode-title">フレンド & オンライン</div>
+    <div style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:14px;color:#888;" id="friend-count-label">0人</div>
+  </div>
+  <!-- タブ切り替え -->
+  <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+    <button id="tab-friend" onclick="switchFriendTab('friend')" style="flex:1;padding:12px;background:rgba(255,200,0,0.1);border:none;border-bottom:2px solid #ffcc00;color:#ffcc00;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">👥 フレンド</button>
+    <button id="tab-online" onclick="switchFriendTab('online')" style="flex:1;padding:12px;background:transparent;border:none;border-bottom:2px solid transparent;color:#666;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;"><span class="online-dot"></span>オンライン</button>
+  </div>
+  <!-- フレンドタブ -->
+  <div id="tab-content-friend" class="shop-body" style="gap:12px;">
+    <!-- 自分のコード -->
+    <div class="my-code-area">
+      <div class="my-code-label">📋 あなたのフレンドコード（友達に渡そう）</div>
+      <div class="my-code-text" id="my-friend-code" onclick="copyFriendCode()">コード生成中...</div>
+      <div class="my-code-copy" onclick="copyFriendCode()">📋 コピー</div>
+    </div>
+    <!-- フレンド追加 -->
+    <div class="friend-add-area">
+      <div class="friend-add-title">➕ フレンドを追加</div>
+      <div class="friend-add-desc">友達のフレンドコードを貼り付けてください</div>
+      <textarea class="friend-code-input" id="friend-add-input" placeholder="フレンドコードをここに貼り付け..."></textarea>
+      <button class="friend-add-btn" onclick="addFriend()">追加する</button>
+    </div>
+    <!-- フレンドリスト -->
+    <div class="friend-section">フレンドリスト</div>
+    <div id="friend-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div><!-- /tab-content-friend -->
+
+  <!-- オンラインタブ -->
+  <div id="tab-content-online" class="shop-body" style="gap:12px;display:none;">
+    <div id="firebase-status-area">
+      <div class="firebase-setup-banner" onclick="showFirebaseSetupGuide()">
+        ⚠️ Firebase未設定 — タップして設定方法を確認
+      </div>
+    </div>
+    <div class="friend-section">オンラインのプレイヤー <span class="online-count" id="online-count">0</span>人</div>
+    <div id="online-users-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="color:#555;font-size:12px;text-align:center;padding:16px;">Firebase設定後に表示されます</div>
+    </div>
+    <div class="friend-section" style="margin-top:8px;">オンラインフレンド</div>
+    <div id="online-friends-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="color:#555;font-size:12px;text-align:center;padding:8px;">フレンドのオンライン状況がここに表示されます</div>
+    </div>
+  </div><!-- /tab-content-online -->
+</div>
+
+<!-- FIREBASE SETUP GUIDE MODAL -->
+<div class="code-modal" id="firebase-guide-modal">
+  <div class="code-panel" style="max-height:80vh;overflow-y:auto;">
+    <h3 style="color:#ffcc00;margin-bottom:8px;">🔥 Firebase設定手順</h3>
+    <p style="font-size:12px;color:#888;line-height:1.7;margin-bottom:12px;">
+      1. <a href="https://firebase.google.com" target="_blank" style="color:#4fc3f7;">firebase.google.com</a> にアクセス<br>
+      2. 「コンソールへ移動」→「プロジェクトを追加」<br>
+      3. プロジェクト名を入力して作成<br>
+      4. 「構築」→「Realtime Database」→「データベースを作成」（テストモード）<br>
+      5. プロジェクト設定（⚙）→「ウェブアプリを追加」（&lt;/&gt;ボタン）<br>
+      6. 表示された firebaseConfig をコピー<br>
+      7. このHTMLをテキストエディタで開き<br>
+      　 <code style="color:#ffcc00;font-size:10px;">const firebaseConfig = {</code><br>
+      　 の部分に貼り付けて保存<br>
+      8. ファイルを再読み込み → オンライン機能が有効に！
+    </p>
+    <div class="code-btn primary" onclick="document.getElementById('firebase-guide-modal').style.display='none'" style="cursor:pointer;border-radius:10px;padding:12px;text-align:center;">閉じる</div>
+  </div>
+</div>
+
+<!-- RANKING SCREEN -->
+<div id="ranking-screen" style="display:none">
+  <div class="mode-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="mode-title">🏆 ランキング</div>
+    <button onclick="loadRanking()" style="background:none;border:none;color:#4fc3f7;font-size:13px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;padding:6px 10px;">更新</button>
+  </div>
+  <div id="ranking-body" class="shop-body" style="gap:8px;">
+    <div style="color:#555;font-size:13px;text-align:center;padding:30px;">読み込み中...</div>
+  </div>
+</div>
+
+<!-- QUEST SCREEN -->
+<div id="quest-screen" style="display:none">
+  <div class="mode-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="mode-title">クエスト</div>
+  </div>
+  <div class="shop-body">
+    <div class="shop-section-title">デイリークエスト</div>
+    <div style="display:flex;flex-direction:column;gap:10px;" id="quest-items"></div>
+  </div>
+</div>
+
+<!-- LUCKY DROP SCREEN -->
+<div id="lucky-drop-screen" style="display:none">
+  <div id="drop-tier">RARE</div>
+  <canvas id="drop-canvas" width="300" height="300" style="border-radius:50%;"></canvas>
+  <div id="drop-prize"></div>
+  <button id="drop-claim-btn" onclick="">受け取る</button>
+  <button class="gm-close" onclick="showHome()" style="width:240px;margin-top:0;">スキップ</button>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="home-screen" style="display:none">
+  <!-- トップバー -->
+  <div class="home-topbar">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="home-logo">BRAWL</div>
+      <div id="home-level-badge" onclick="showLevelInfo()" title="レベル">
+        <span style="font-size:11px;">⭐</span>
+        <span class="level-num">Lv<span id="home-level-num">1</span></span>
+        <div class="level-bar-wrap"><div class="level-bar-fill" id="home-level-bar" style="width:0%"></div></div>
+      </div>
+      <div class="home-player-info" onclick="openProfileMenu()" style="cursor:pointer;" title="タップで名前・利き手変更">
+        <span style="font-size:14px;">👤</span>
+        <span class="home-player-name-text" id="home-player-name-disp">—</span>
+        <span class="home-trophy-inline">🏆 <span id="home-trophy-count">0</span></span>
+      </div>
+    </div>
+    <div class="home-topbar-right">
+      <div class="home-chip"><span style="font-size:14px;">🪙</span><span class="home-chip-num home-coins-num" id="home-coins-count">0</span></div>
+      <div class="home-chip"><span style="font-size:14px;">🟢</span><span class="home-chip-num home-gem-num" id="home-gem-count">0</span></div>
+      <div class="home-chip" style="cursor:pointer;" onclick="openLuckyDrop()"><span style="font-size:14px;">🎁</span><span class="home-chip-num home-drop-num" id="home-drop-count">0</span></div>
+    </div>
+  </div>
+
+  <!-- メインエリア -->
+  <div class="home-main">
+    <!-- キャラ中央表示 -->
+    <div id="home-char-stage">
+      <canvas id="home-char-canvas-big" onclick="openSelect()"></canvas>
+      <div id="home-no-char">
+        <div style="font-size:48px;">👆</div>
+        <div>キャラを選ぼう</div>
+      </div>
+    </div>
+  </div><!-- /home-main -->
+
+  <!-- パーティスロット -->
+  <div id="home-party-row">
+    <!-- 自分 -->
+    <div class="party-slot">
+      <div class="party-avatar me" id="party-me-avatar">
+        <canvas id="party-me-canvas" width="56" height="56" style="width:56px;height:56px;"></canvas>
+      </div>
+      <div class="party-label me" id="party-me-label">あなた</div>
+    </div>
+    <!-- フレンドスロット1 -->
+    <div class="party-slot" onclick="openPartyPick(0)" id="party-slot-0">
+      <div class="party-avatar empty" id="party-avatar-0">
+        <span class="plus-icon">＋</span>
+      </div>
+      <div class="party-label" id="party-label-0">追加</div>
+    </div>
+    <!-- フレンドスロット2 -->
+    <div class="party-slot" onclick="openPartyPick(1)" id="party-slot-1">
+      <div class="party-avatar empty" id="party-avatar-1">
+        <span class="plus-icon">＋</span>
+      </div>
+      <div class="party-label" id="party-label-1">追加</div>
+    </div>
+    <!-- フレンドスロット3 -->
+    <div class="party-slot" onclick="openPartyPick(2)" id="party-slot-2">
+      <div class="party-avatar empty" id="party-avatar-2">
+        <span class="plus-icon">＋</span>
+      </div>
+      <div class="party-label" id="party-label-2">追加</div>
+    </div>
+  </div>
+
+  <!-- バトルエリア（下） -->
+  <div class="home-battle-area">
+    <div class="home-mode-row" onclick="openModeSelect()">
+      <div class="home-mode-icon-big" id="home-mode-icon">⚔️</div>
+      <div class="home-mode-info">
+        <div class="home-mode-label">モード</div>
+        <div class="home-mode-name-big" id="home-mode-name">バトルロワイヤル</div>
+        <div class="home-mode-desc-small" id="home-mode-desc">10人で最後まで生き残れ</div>
+      </div>
+      <div style="font-size:20px;color:#888;">›</div>
+    </div>
+    <button id="battle-btn" onclick="startSelectedMode()">⚔ バトル！</button>
+  </div>
+
+  <!-- ボトムナビ（全ボタン統合） -->
+  <div class="home-nav">
+    <button class="nav-btn" onclick="openSelect()">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">キャラ</span>
+    </button>
+    <button class="nav-btn" onclick="openShop()">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">ショップ</span>
+    </button>
+    <button class="nav-btn" onclick="openQuests()" id="nav-quest-btn">
+      <span class="nav-icon">🎯</span>
+      <span class="nav-label">クエスト</span>
+    </button>
+    <button class="nav-btn" onclick="openLuckyDrop()" id="nav-drop-btn">
+      <span class="nav-icon">🎁</span>
+      <span class="nav-label" id="nav-drop-label">ドロップ</span>
+    </button>
+    <button class="nav-btn" onclick="openRanking()">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">ランキング</span>
+    </button>
+    <button class="nav-btn" onclick="openFriends()">
+      <span class="nav-icon">👥</span>
+      <span class="nav-label">フレンド</span>
+    </button>
+    <button class="nav-btn" onclick="manualSave()">
+      <span class="nav-icon">💾</span>
+      <span class="nav-label">セーブ</span>
+    </button>
+    <button class="nav-btn" onclick="openLoadModal()">
+      <span class="nav-icon">📂</span>
+      <span class="nav-label">ロード</span>
+    </button>
+    <button class="nav-btn" onclick="openAdminModal()">
+      <span class="nav-icon">🔐</span>
+      <span class="nav-label">管理者</span>
+    </button>
+    <button class="nav-btn" onclick="openResetModal()">
+      <span class="nav-icon">🗑️</span>
+      <span class="nav-label">リセット</span>
+    </button>
+  </div>
+</div>
+
+<!-- SHOP SCREEN -->
+
+<!-- SHOP SCREEN -->
+<div id="shop-screen" style="display:none">
+  <div class="shop-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="shop-title">ショップ</div>
+    <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Bebas Neue',sans-serif;font-size:18px;">
+        <span style="color:#ffca28;">🪙 <span id="shop-coins-count">0</span></span>
+        <span style="color:#66bb6a;">🟢 <span id="shop-gem-count">0</span></span>
+      </div>
+      <div id="shop-level-info" style="font-size:9px;color:#666;letter-spacing:0.5px;"></div>
+    </div>
+  </div>
+  <div class="shop-body">
+    <div class="shop-section-title">パワーアップ</div>
+    <div class="shop-items" id="shop-powerup-items"></div>
+    <div class="shop-section-title">特別アイテム</div>
+    <div class="shop-items" id="shop-special-items"></div>
+    <div class="shop-section-title">エメラルド購入</div>
+    <div class="shop-items" id="shop-gem-items"></div>
+    <div class="shop-section-title">ブロスター解放</div>
+    <div class="shop-items" id="shop-brawler-items"></div>
+  </div>
+</div>
+
+<!-- CHARACTER SELECT -->
+<div id="select-screen" style="display:none">
+  <div class="select-topbar">
+    <button class="select-back" onclick="showHome()">←</button>
+    <div class="select-title">ブロスターを選べ</div>
+  </div>
+  <h1>ショーダウン</h1>
+  <div class="sub">ブロスターを選べ</div>
+  <div id="scroll-hint">
+    <div class="scroll-arrow" onclick="scrollGrid(-1)">↑</div>
+    <div id="scroll-pos">1 / 4</div>
+    <div class="scroll-arrow" onclick="scrollGrid(1)">↓</div>
+  </div>
+  <div id="grid-wrap">
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+  <!-- フレンドスロット -->
+  <div id="friend-slots-bar">
+    <div class="friend-slot-label">👥 一緒にバトル</div>
+    <div class="friend-slot" id="fslot-0" onclick="openFriendPick(0)">
+      <div class="friend-slot-avatar empty" id="fslot-avatar-0">
+        <span style="font-size:22px;color:#444;">＋</span>
+      </div>
+      <div class="friend-slot-name" id="fslot-name-0">追加</div>
+    </div>
+    <div class="friend-slot" id="fslot-1" onclick="openFriendPick(1)">
+      <div class="friend-slot-avatar empty" id="fslot-avatar-1">
+        <span style="font-size:22px;color:#444;">＋</span>
+      </div>
+      <div class="friend-slot-name" id="fslot-name-1">追加</div>
+    </div>
+    <div class="friend-slot" id="fslot-2" onclick="openFriendPick(2)">
+      <div class="friend-slot-avatar empty" id="fslot-avatar-2">
+        <span style="font-size:22px;color:#444;">＋</span>
+      </div>
+      <div class="friend-slot-name" id="fslot-name-2">追加</div>
+    </div>
+  </div>
+  <div id="select-bottom">
+    <div id="selected-preview">
+      <canvas id="sel-canvas"></canvas>
+      <div>
+        <div id="sel-name">—</div>
+        <div id="sel-weapon">キャラを選択</div>
+      </div>
+    </div>
+    <button id="select-btn" disabled onclick="beginGame()">バトル開始！</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-wrap" style="display:none">
+  <canvas id="game-canvas"></canvas>
+  <div id="reload-score">🔵 0 🟣 0 🟡 0 🟢 0 🔴 0</div>
+  <div id="respawn-timer"><div id="respawn-text">やられた…<br>復活まで 5秒</div></div>
+  <div id="hud">
+    <div id="hud-tl">
+      <div class="hud-name" id="hud-name">SHELLY</div>
+      <div class="hud-bar-row">
+        <div class="hud-bar-label" style="color:#e24b4a">体力</div>
+        <div class="hud-bar-bg"><div class="hud-bar-fill" id="hp-fill" style="background:#4deb4d;width:100%"></div></div>
+      </div>
+      <div class="ammo-row" id="ammo-row"></div>
+    </div>
+    <div id="hud-tr">
+      <div id="hud-alive">10</div>
+      <div id="hud-alive-label">残り人数</div>
+    </div>
+    <div id="hud-bot">
+      <div id="gem-display">🪙 <span id="gem-num">0</span></div>
+      <div id="super-btn-wrap">
+        <div id="super-label">スーパー</div>
+        <div id="super-gauge-bg"><div id="super-gauge-fill" style="width:0%"></div></div>
+        <div id="super-ready">発動可！</div>
+      </div>
+    </div>
+    <div id="kill-feed"></div>
+  </div>
+  <div id="overlay">
+    <h2 id="ov-title">勝利！</h2>
+    <p id="ov-sub">最後まで生き残った！</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="beginGame()">もう一度</button>
+      <button onclick="goHome()" style="background:linear-gradient(135deg,#546e7a,#37474f);">🏠 ホームへ</button>
+    </div>
+  </div>
+  <div id="hint">WASD: 移動 &nbsp;|&nbsp; クリック: 攻撃 &nbsp;|&nbsp; スペース: スーパー</div>
+  <!-- タッチ操作: 左=移動, 中=スーパー, 右=攻撃 -->
+  <div class="dpad-zone" id="dpad-left" style="display:none">
+    <div class="dpad-base"></div>
+    <div id="move-knob"></div>
+  </div>
+  <div id="gadget-hud">
+    <button id="gadget-hud-btn" onclick="useGadget()">❓</button>
+    <div id="gadget-hud-cd"></div>
+  </div>
+  <div id="dpad-super" style="display:none">
+    <div id="super-base-ring"></div>
+    <div id="super-knob">必殺</div>
+  </div>
+  <div class="dpad-zone" id="dpad-right" style="display:none">
+    <div class="dpad-base" id="attack-base-ring"></div>
+    <div id="attack-knob"></div>
+  </div>
+</div>
+
+<script src="data_brawlers.js"></script>
+<script src="draw_sprites.js"></script>
+<script src="data_gadgets.js"></script>
+<script src="game_state.js"></script>
+<script src="game_engine.js"></script>
+<script src="ui_screens.js"></script>
+<script src="shop_quests.js"></script>
+<script src="admin_login.js"></script>
+<script src="save_friends.js"></script>
+<script src="touch_controls.js"></script>
+<script src="init.js"></script>
+</body>
+</html>
