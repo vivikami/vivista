@@ -64,26 +64,24 @@ function refreshHomeChar(){
   const noChar = document.getElementById('home-no-char');
   const namDisp = document.getElementById('home-player-name-disp');
   if(namDisp) namDisp.textContent = playerName || '—';
-
   const selfLabel = document.getElementById('home-self-name-label');
-  if(selectedBrawler){
-    noChar.style.display='none';
-    bigCanvas.style.display='block';
-    const sz = Math.round(Math.min(window.innerWidth * 0.45, 220));
-    bigCanvas.width = sz; bigCanvas.height = sz;
-    bigCanvas.style.width = sz + 'px'; bigCanvas.style.height = sz + 'px';
-    // selectedBrawler をローカルに固定してから描画
-    const _b = selectedBrawler;
-    setTimeout(() => drawCharacterSprite(bigCanvas, _b, sz), 30);
-    if(selfLabel){
-      selfLabel.textContent = playerName || _b.name;
-      selfLabel.style.color = _b.col || '#ffcc00';
-    }
-  } else {
-    bigCanvas.style.display='none';
-    noChar.style.display='flex';
-    if(selfLabel) selfLabel.textContent = '';
+
+  if(!selectedBrawler){
+    if(bigCanvas) bigCanvas.style.display='none';
+    if(noChar) noChar.style.display='flex';
+    if(selfLabel) selfLabel.textContent='';
+    return;
   }
+
+  const b = selectedBrawler;
+  if(noChar) noChar.style.display='none';
+  if(selfLabel){ selfLabel.textContent=playerName||b.name; selfLabel.style.color=b.col||'#ffcc00'; }
+  if(!bigCanvas) return;
+
+  const sz = Math.round(Math.min(window.innerWidth * 0.45, 220));
+  bigCanvas.style.display='block';
+  // drawCharacterSprite は同期関数なので直接呼ぶ（内部でwidth/heightを設定）
+  drawCharacterSprite(bigCanvas, b, sz);
 }
 
 function openSelect(){

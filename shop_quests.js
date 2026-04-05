@@ -255,6 +255,7 @@ function rebuildSelectScreen(){
         card.classList.add('selected');
         selectedBrawler=b;
         saveSelectedBrawler();
+        if(typeof refreshHomeChar==='function') refreshHomeChar();
         const _sb2=document.getElementById('select-btn'); if(_sb2) _sb2.disabled=false;
         const _sn=document.getElementById('sel-name'); if(_sn){_sn.textContent=b.name;_sn.style.color=b.col;}
         const _sw=document.getElementById('sel-weapon'); if(_sw) _sw.textContent=b.weapon+' · '+b.rarity;
