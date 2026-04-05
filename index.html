@@ -70,11 +70,12 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 /* キャラ大表示エリア */
 #home-char-stage{
   position:relative;flex:1;width:100%;
-  display:flex;align-items:flex-end;justify-content:center;
+  display:flex;flex-direction:row;align-items:flex-end;
+  justify-content:center;gap:12px;padding-bottom:8px;
 }
 #home-char-canvas-big{
-  width:min(55vw,280px);height:min(55vw,280px);
-  position:relative;z-index:3;
+  width:min(48vw,240px);height:min(48vw,240px);
+  position:relative;z-index:3;flex-shrink:0;
   filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
   cursor:pointer;transition:transform .2s;
 }
@@ -526,8 +527,8 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 }
 /* ===== フレンドプレビューバブル（キャラ横） ===== */
 #friend-preview-col{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);
   display:flex;flex-direction:column;gap:8px;z-index:5;
+  align-self:center;flex-shrink:0;
 }
 .friend-preview-bubble{
   width:54px;height:54px;border-radius:50%;
@@ -1117,11 +1118,14 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
     flex: 0 0 clamp(160px, 32vh, 240px) !important;
     height: clamp(160px, 32vh, 240px);
     min-height: unset;
+    gap: 8px;
   }
   #home-char-canvas-big {
     width: clamp(120px, 28vh, 180px) !important;
     height: clamp(120px, 28vh, 180px) !important;
   }
+  .friend-preview-bubble { width: 46px; height: 46px; }
+  #friend-preview-col { gap: 6px; }
 
   /* パーティスロット */
   #home-party-row { padding: 8px 12px; gap: 10px; }
@@ -1703,12 +1707,17 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   <div class="home-main">
     <!-- キャラ中央表示 -->
     <div id="home-char-stage">
-      <canvas id="home-char-canvas-big" onclick="openSelect()"></canvas>
-      <div id="home-no-char">
-        <div style="font-size:48px;">👆</div>
-        <div>キャラを選ぼう</div>
+      <!-- 左スペーサー（フレンド列と対称） -->
+      <div style="width:54px;flex-shrink:0;"></div>
+      <!-- 自分のキャラ -->
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+        <canvas id="home-char-canvas-big" onclick="openSelect()"></canvas>
+        <div id="home-no-char">
+          <div style="font-size:48px;">👆</div>
+          <div>キャラを選ぼう</div>
+        </div>
       </div>
-      <!-- フレンドプレビューバブル -->
+      <!-- フレンドアバター列 -->
       <div id="friend-preview-col">
         <div class="friend-preview-bubble" id="fpb-0" onclick="openFriendCharPreview(0)">
           <span style="font-size:20px;color:#444;">＋</span>
