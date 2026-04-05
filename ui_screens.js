@@ -65,24 +65,24 @@ function refreshHomeChar(){
   const namDisp = document.getElementById('home-player-name-disp');
   if(namDisp) namDisp.textContent = playerName || '—';
 
+  const selfLabel = document.getElementById('home-self-name-label');
   if(selectedBrawler){
     noChar.style.display='none';
     bigCanvas.style.display='block';
-    // 大きなサイズで描画
-    const sz = Math.min(window.innerWidth*0.55, 280);
+    // canvas サイズに合わせて描画
+    const sz = bigCanvas.offsetWidth || Math.min(window.innerWidth*0.38, 180);
+    bigCanvas.width = sz; bigCanvas.height = sz;
     drawCharacterSprite(bigCanvas, selectedBrawler, sz);
-    // キャラ名バブル
-    let bubble = document.getElementById('home-char-bubble');
-    if(!bubble){
-      bubble=document.createElement('div');
-      bubble.id='home-char-bubble';
-      bubble.style.cssText='position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:6px 14px;text-align:center;z-index:5;white-space:nowrap;';
-      document.getElementById('home-char-stage').appendChild(bubble);
+    if(selfLabel){
+      selfLabel.textContent = playerName || selectedBrawler.name;
+      selfLabel.style.color = selectedBrawler.col || '#ffcc00';
     }
-    bubble.innerHTML='<div style="font-family:Bebas Neue,sans-serif;font-size:16px;color:#fff;letter-spacing:2px;">'+selectedBrawler.name+'</div><div style="font-size:10px;letter-spacing:2px;margin-top:1px;color:'+selectedBrawler.rarityColor+';">'+selectedBrawler.rarity+'</div>';
+    const bubble=document.getElementById('home-char-bubble');
+    if(bubble) bubble.remove();
   } else {
     bigCanvas.style.display='none';
     noChar.style.display='flex';
+    if(selfLabel) selfLabel.textContent = playerName || '';
     const bubble=document.getElementById('home-char-bubble');
     if(bubble) bubble.remove();
   }

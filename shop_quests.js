@@ -468,109 +468,162 @@ const DROP_PRIZES = [
 ];
 
 
+// ===== ラッキードロップ（5回タップ式） =====
+let _dropTapCount = 0;
+let _dropPrizes   = [];
+let _dropBusy     = false;
+
 function openLuckyDrop(){
   if(luckyDrops<=0){ showToast('ラッキードロップがありません！'); return; }
   hideAllScreens();
+  _dropTapCount=0; _dropPrizes=[]; _dropBusy=false;
   document.getElementById('lucky-drop-screen').style.display='flex';
-  startDropAnimation();
+  _buildDropOrbs();
 }
 
-function startDropAnimation(){
-  const screen=document.getElementById('lucky-drop-screen');
-  // ランダムにティア決定（本家風：低ティアが多い）
+function _buildDropOrbs(){
+  const wrap=document.getElementById('drop-orbs');
+  wrap.innerHTML='';
+  for(let i=0;i<5;i++){
+    const orb=document.createElement('div');
+    orb.className='drop-orb'+(i===0?' drop-orb-next':'');
+    orb.id='drop-orb-'+i;
+    orb.innerHTML='<span class="drop-orb-q">？</span>';
+    orb.addEventListener('click',()=>_tapOrb(i));
+    wrap.appendChild(orb);
+  }
+  document.getElementById('drop-progress').textContent='0 / 5';
+  document.getElementById('drop-result-list').innerHTML='';
+  document.getElementById('drop-collect-btn').style.display='none';
+  document.getElementById('drop-hint').textContent='✨ 玉をタップして開けよう！';
+}
+
+function _rollPrize(){
   const roll=Math.random();
-  let tierIdx=0;
-  if(roll<0.45) tierIdx=0;       // RARE 45%
-  else if(roll<0.75) tierIdx=1;  // SUPER RARE 30%
-  else if(roll<0.90) tierIdx=2;  // EPIC 15%
-  else if(roll<0.97) tierIdx=3;  // MYTHIC 7%
-  else tierIdx=4;                 // LEGENDARY 3%
-
-  const tier=DROP_PRIZES[tierIdx];
+  let idx=0;
+  if(roll<0.45) idx=0;
+  else if(roll<0.75) idx=1;
+  else if(roll<0.90) idx=2;
+  else if(roll<0.97) idx=3;
+  else idx=4;
+  const tier=DROP_PRIZES[idx];
   const prize=tier.prizes[Math.floor(Math.random()*tier.prizes.length)];
+  return {tier,prize};
+}
 
-  // アニメーション表示
-  const canvas=document.getElementById('drop-canvas');
-  const ctx=canvas.getContext('2d');
-  canvas.width=300; canvas.height=300;
+function _tapOrb(i){
+  if(_dropBusy) return;
+  if(i!==_dropTapCount) return;
+  _dropBusy=true;
 
+  const {tier,prize}=_rollPrize();
+  _dropPrizes.push({tier,prize});
+
+  const orb=document.getElementById('drop-orb-'+i);
+  // スピンアニメーション
+  orb.classList.remove('drop-orb-next');
+  orb.classList.add('drop-orb-spin');
+  orb.innerHTML='';
+
+  // canvas で球を描く
+  const cv=document.createElement('canvas');
+  cv.width=90;cv.height=90;
+  orb.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  let frame=0, speed=0.18;
+  function spin(){
+    ctx.clearRect(0,0,90,90);
+    frame++;
+    speed=Math.max(0.03,speed-0.0015);
+    const hue=(frame*speed*200)%360;
+    const grd=ctx.createRadialGradient(27,27,6,45,45,40);
+    grd.addColorStop(0,'hsl('+hue+',100%,80%)');
+    grd.addColorStop(0.5,'hsl('+(hue+80)+',100%,55%)');
+    grd.addColorStop(1,'hsl('+(hue+160)+',80%,30%)');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(45,45,40,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.3)';
+    ctx.beginPath();ctx.ellipse(30,28,14,9,-0.5,0,Math.PI*2);ctx.fill();
+    if(frame<80||speed>0.035){ requestAnimationFrame(spin); }
+    else { _revealOrb(orb,cv,ctx,tier,prize,i); }
+  }
+  spin();
+}
+
+function _revealOrb(orb,cv,ctx,tier,prize,i){
   let frame=0;
-  let phase='spin'; // spin → reveal → done
-  let spinSpeed=0.15;
+  function burst(){
+    ctx.clearRect(0,0,90,90);
+    frame++;
+    const t=Math.min(1,frame/25);
+    // 外縁爆発
+    ctx.fillStyle=tier.col;
+    ctx.beginPath();ctx.arc(45,45,40*(1+t*0.6),0,Math.PI*2);ctx.fill();
+    // 中心暗
+    ctx.fillStyle='rgba(10,10,20,0.75)';
+    ctx.beginPath();ctx.arc(45,45,35*(1-t*0.4),0,Math.PI*2);ctx.fill();
+    // 光芒
+    for(let k=0;k<8;k++){
+      const a=k/8*Math.PI*2+frame*0.08;
+      ctx.strokeStyle=tier.col;ctx.lineWidth=2.5*(1-t);
+      ctx.globalAlpha=1-t;
+      ctx.beginPath();ctx.moveTo(45+Math.cos(a)*36,45+Math.sin(a)*36);
+      ctx.lineTo(45+Math.cos(a)*(36+26*t),45+Math.sin(a)*(36+26*t));ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+    if(t>0.6){
+      ctx.fillStyle='#fff';
+      ctx.font=`bold ${Math.round(11+12*t)}px 'Bebas Neue',sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(prize.label,45,45);
+    }
+    if(frame<26){ requestAnimationFrame(burst); }
+    else {
+      // 確定表示
+      orb.classList.remove('drop-orb-spin');
+      orb.classList.add('drop-orb-done');
+      orb.style.borderColor=tier.col;
+      orb.style.boxShadow='0 0 12px '+tier.col+'88';
+      // リストに追加
+      const li=document.createElement('div');
+      li.className='drop-result-item';
+      li.style.color=tier.col;
+      li.textContent=tier.tier+' — '+prize.label;
+      document.getElementById('drop-result-list').appendChild(li);
 
-  document.getElementById('drop-tier').textContent=tier.tier;
-  document.getElementById('drop-tier').style.color=tier.col;
-  document.getElementById('drop-prize').textContent='';
-  document.getElementById('drop-claim-btn').style.display='none';
+      _dropTapCount++;
+      document.getElementById('drop-progress').textContent=_dropTapCount+' / 5';
+      _dropBusy=false;
 
-  function drawDrop(){
-    ctx.clearRect(0,0,300,300);
-    const cx=150,cy=150,r=100;
-
-    if(phase==='spin'){
-      // 回転する虹色の球
-      frame++;
-      spinSpeed=Math.max(0.02, spinSpeed-0.001);
-      const hue=(frame*spinSpeed*180)%360;
-      const grd=ctx.createRadialGradient(cx-30,cy-30,10,cx,cy,r);
-      grd.addColorStop(0,'hsl('+hue+',100%,80%)');
-      grd.addColorStop(0.5,'hsl('+(hue+60)+',100%,50%)');
-      grd.addColorStop(1,'hsl('+(hue+120)+',80%,30%)');
-      ctx.fillStyle=grd;
-      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-      // 光沢
-      ctx.fillStyle='rgba(255,255,255,0.35)';
-      ctx.beginPath(); ctx.ellipse(cx-28,cy-28,30,20,-0.5,0,Math.PI*2); ctx.fill();
-
-      if(frame>120 && spinSpeed<0.025){
-        phase='reveal';
-        frame=0;
+      if(_dropTapCount<5){
+        const next=document.getElementById('drop-orb-'+_dropTapCount);
+        if(next) next.classList.add('drop-orb-next');
+        document.getElementById('drop-hint').textContent='✨ 玉をタップして開けよう！';
+      } else {
+        document.getElementById('drop-hint').textContent='🎉 全部開けた！';
+        document.getElementById('drop-collect-btn').style.display='block';
       }
-      requestAnimationFrame(drawDrop);
-    } else {
-      // 開封エフェクト
-      frame++;
-      const t=Math.min(1,frame/40);
-      // 爆発パーティクル
-      ctx.fillStyle=tier.col;
-      ctx.beginPath(); ctx.arc(cx,cy,r*(1+t*0.5),0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(0,0,0,0.6)';
-      ctx.beginPath(); ctx.arc(cx,cy,r*0.85*(1-t*0.3),0,Math.PI*2); ctx.fill();
-      // 輝き
-      for(let i=0;i<12;i++){
-        const a=i/12*Math.PI*2+frame*0.05;
-        const len=r*(0.3+t*0.7);
-        ctx.strokeStyle=tier.col; ctx.lineWidth=3*(1-t);
-        ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*r*0.9,cy+Math.sin(a)*r*0.9);
-        ctx.lineTo(cx+Math.cos(a)*(r+len),cy+Math.sin(a)*(r+len)); ctx.stroke();
-      }
-      // 賞品テキスト
-      if(t>0.5){
-        ctx.fillStyle='#fff';
-        ctx.font=`bold ${Math.floor(30*t)}px 'Bebas Neue',sans-serif`;
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(prize.label,cx,cy);
-      }
-      if(frame===41){
-        document.getElementById('drop-prize').textContent=prize.label;
-        document.getElementById('drop-claim-btn').style.display='block';
-        document.getElementById('drop-claim-btn').onclick=()=>claimDrop(prize);
-        return;
-      }
-      requestAnimationFrame(drawDrop);
     }
   }
-  drawDrop();
+  burst();
 }
 
-function claimDrop(prize){
-  if(prize.type==='coins'){coins+=prize.amount; saveCoins();}
-  else if(prize.type==='gems'){gemCount+=prize.amount; saveGems();}
+function claimAllDrops(){
+  let totalCoins=0, totalGems=0;
+  _dropPrizes.forEach(({prize})=>{
+    if(prize.type==='coins') totalCoins+=prize.amount;
+    else if(prize.type==='gems') totalGems+=prize.amount;
+  });
+  if(totalCoins>0){ coins+=totalCoins; saveCoins(); }
+  if(totalGems>0){ gemCount+=totalGems; saveGems(); }
   luckyDrops--; saveDrops();
   updateAllDisplays();
-  showHome();
-  showToast(`✨ ${prize.label} ゲット！`);
   addQuestProgress('drop');
+  showHome();
+  const msg=[]
+  if(totalCoins>0) msg.push('🪙'+totalCoins);
+  if(totalGems>0)  msg.push('🟢'+totalGems);
+  showToast('✨ '+msg.join(' + ')+' ゲット！');
 }
 
 

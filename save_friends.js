@@ -159,23 +159,23 @@ function updateFriendPreviewBubbles(){
   for(let i=0;i<3;i++){
     const f = friendSlots[i];
     const bubble = document.getElementById('fpb-'+i);
+    const nameEl = document.getElementById('fpb-name-'+i);
     if(!bubble) continue;
     bubble.innerHTML='';
     if(f){
-      bubble.className='friend-preview-bubble filled';
+      bubble.className='fpb-large filled';
       const brawler=BRAWLERS.find(b=>b.id===f.b);
+      const sz=parseInt(getComputedStyle(bubble).width)||100;
       const c=document.createElement('canvas');
-      c.width=54;c.height=54;
-      if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,54),30);
+      c.width=sz;c.height=sz;
+      c.style.width=sz+'px';c.style.height=sz+'px';
+      if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,sz),30);
       bubble.appendChild(c);
-      // 名前ラベル
-      const nm=document.createElement('div');
-      nm.className='fpb-name';
-      nm.textContent=f.n;
-      bubble.appendChild(nm);
+      if(nameEl){ nameEl.textContent=f.n; nameEl.style.color=f.bc||'#4fc3f7'; }
     } else {
-      bubble.className='friend-preview-bubble';
-      bubble.innerHTML='<span style="font-size:20px;color:#444;">＋</span>';
+      bubble.className='fpb-large';
+      bubble.innerHTML='<span style="font-size:26px;color:#444;">＋</span>';
+      if(nameEl) nameEl.textContent='';
     }
   }
 }

@@ -70,16 +70,57 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 /* キャラ大表示エリア */
 #home-char-stage{
   position:relative;flex:1;width:100%;
-  display:flex;flex-direction:row;align-items:flex-end;
-  justify-content:center;gap:12px;padding-bottom:8px;
+  display:flex;flex-direction:row;align-items:center;
+  justify-content:center;gap:16px;padding:8px 12px;
+}
+/* 自分エリア（中央） */
+#home-self-area{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  flex-shrink:0;
 }
 #home-char-canvas-big{
-  width:min(48vw,240px);height:min(48vw,240px);
+  width:min(38vw,180px);height:min(38vw,180px);
+  border-radius:50%;
+  background:rgba(255,200,0,0.08);
+  border:3px solid rgba(255,200,0,0.5);
+  box-shadow:0 0 18px rgba(255,200,0,0.25);
   position:relative;z-index:3;flex-shrink:0;
-  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  filter:drop-shadow(0 6px 16px rgba(0,0,0,0.5));
   cursor:pointer;transition:transform .2s;
 }
 #home-char-canvas-big:hover{transform:scale(1.04);}
+#home-self-name-label{
+  font-family:'Bebas Neue',sans-serif;font-size:13px;color:#ffcc00;
+  letter-spacing:2px;text-shadow:0 1px 4px rgba(0,0,0,0.8);
+}
+/* フレンド左エリア */
+#home-friend-left{
+  display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;
+}
+/* フレンド右エリア */
+#home-friend-right{
+  display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;
+}
+/* フレンドアバター大 */
+.fpb-large{
+  width:min(18vw,100px);height:min(18vw,100px);
+  border-radius:50%;
+  background:rgba(79,195,247,0.06);
+  border:2.5px dashed rgba(79,195,247,0.3);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;transition:.15s;position:relative;
+  flex-shrink:0;
+}
+.fpb-large.filled{
+  border:2.5px solid #4fc3f7;
+  box-shadow:0 0 14px rgba(79,195,247,0.35);background:rgba(79,195,247,0.08);
+}
+.fpb-large:active{transform:scale(0.92);}
+.fpb-large-name{
+  font-family:'Bebas Neue',sans-serif;font-size:11px;color:#4fc3f7;
+  letter-spacing:1px;text-align:center;
+  max-width:min(18vw,100px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 /* キャラ台座 */
 #home-char-stage::after{
   content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
@@ -430,15 +471,71 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
   align-items:center;justify-content:center;
   background:radial-gradient(ellipse at center,#1a0d2e 0%,#0a0f1e 100%);
-  gap:20px;
+  gap:14px;padding:20px;
 }
-#drop-tier{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;}
-#drop-prize{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;letter-spacing:3px;min-height:44px;}
-#drop-claim-btn{
+#drop-header-row{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;max-width:400px;
+}
+#drop-title-label{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;color:#ffcc00;letter-spacing:3px;
+}
+#drop-progress{
+  font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:2px;
+}
+#drop-hint{
+  font-size:13px;color:#888;letter-spacing:1px;
+}
+/* 5つの玉コンテナ */
+#drop-orbs{
+  display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;
+}
+/* 各玉 */
+.drop-orb{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,0.05);
+  border:2px solid rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  overflow:hidden;position:relative;
+}
+.drop-orb-next{
+  border-color:rgba(255,200,0,0.7);
+  box-shadow:0 0 14px rgba(255,200,0,0.4);
+  animation:orb-pulse .9s ease-in-out infinite alternate;
+}
+.drop-orb-spin{ border-color:rgba(255,255,255,0.3); }
+.drop-orb-done{ cursor:default; }
+.drop-orb:not(.drop-orb-done):not(.drop-orb-spin):hover{ transform:scale(1.08); }
+.drop-orb-q{
+  font-family:'Bebas Neue',sans-serif;font-size:28px;
+  color:rgba(255,255,255,0.3);
+}
+@keyframes orb-pulse{
+  from{transform:scale(1);box-shadow:0 0 10px rgba(255,200,0,0.3);}
+  to  {transform:scale(1.07);box-shadow:0 0 22px rgba(255,200,0,0.6);}
+}
+/* 結果リスト */
+#drop-result-list{
+  display:flex;flex-direction:column;gap:5px;
+  min-height:60px;width:100%;max-width:320px;
+}
+.drop-result-item{
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;
+  text-align:center;animation:fadeInUp .3s ease;
+}
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(8px);}
+  to  {opacity:1;transform:translateY(0);}
+}
+/* 全部もらうボタン */
+#drop-collect-btn{
   background:linear-gradient(135deg,#ffcc00,#ff9900);color:#1a0d00;border:none;
-  border-radius:14px;padding:16px 48px;font-family:'Bebas Neue',sans-serif;
-  font-size:22px;letter-spacing:3px;cursor:pointer;display:none;
+  border-radius:14px;padding:14px 40px;font-family:'Bebas Neue',sans-serif;
+  font-size:20px;letter-spacing:3px;cursor:pointer;
+  animation:fadeInUp .4s ease;
 }
+#drop-collect-btn:active{transform:scale(0.96);}
 
 
 
@@ -1124,8 +1221,8 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
     width: clamp(120px, 28vh, 180px) !important;
     height: clamp(120px, 28vh, 180px) !important;
   }
-  .friend-preview-bubble { width: 46px; height: 46px; }
-  #friend-preview-col { gap: 6px; }
+  .fpb-large { width: clamp(60px, 14vw, 90px); height: clamp(60px, 14vw, 90px); }
+  #home-char-stage { gap: 10px; padding: 4px 8px; }
 
   /* パーティスロット */
   #home-party-row { padding: 8px 12px; gap: 10px; }
@@ -1672,11 +1769,15 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 
 <!-- LUCKY DROP SCREEN -->
 <div id="lucky-drop-screen" style="display:none">
-  <div id="drop-tier">RARE</div>
-  <canvas id="drop-canvas" width="300" height="300" style="border-radius:50%;"></canvas>
-  <div id="drop-prize"></div>
-  <button id="drop-claim-btn" onclick="">受け取る</button>
-  <button class="gm-close" onclick="showHome()" style="width:240px;margin-top:0;">スキップ</button>
+  <div id="drop-header-row">
+    <div id="drop-title-label">🎁 ラッキードロップ</div>
+    <div id="drop-progress">0 / 5</div>
+  </div>
+  <div id="drop-hint">✨ 玉をタップして開けよう！</div>
+  <div id="drop-orbs"></div>
+  <div id="drop-result-list"></div>
+  <button id="drop-collect-btn" onclick="claimAllDrops()" style="display:none">🎉 全部もらう！</button>
+  <button class="gm-close" onclick="showHome()" style="width:200px;margin-top:4px;font-size:13px;">やめる</button>
 </div>
 
 <!-- HOME SCREEN -->
@@ -1707,27 +1808,32 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   <div class="home-main">
     <!-- キャラ中央表示 -->
     <div id="home-char-stage">
-      <!-- 左スペーサー（フレンド列と対称） -->
-      <div style="width:54px;flex-shrink:0;"></div>
-      <!-- 自分のキャラ -->
-      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+      <!-- フレンド左（slot 0） -->
+      <div id="home-friend-left">
+        <div class="fpb-large" id="fpb-0" onclick="openFriendCharPreview(0)">
+          <span style="font-size:26px;color:#444;">＋</span>
+        </div>
+        <div class="fpb-large-name" id="fpb-name-0"></div>
+      </div>
+      <!-- 自分（中央） -->
+      <div id="home-self-area">
         <canvas id="home-char-canvas-big" onclick="openSelect()"></canvas>
         <div id="home-no-char">
-          <div style="font-size:48px;">👆</div>
+          <div style="font-size:40px;">👆</div>
           <div>キャラを選ぼう</div>
         </div>
+        <div id="home-self-name-label"></div>
       </div>
-      <!-- フレンドアバター列 -->
-      <div id="friend-preview-col">
-        <div class="friend-preview-bubble" id="fpb-0" onclick="openFriendCharPreview(0)">
-          <span style="font-size:20px;color:#444;">＋</span>
+      <!-- フレンド右（slot 1, 2） -->
+      <div id="home-friend-right">
+        <div class="fpb-large" id="fpb-1" onclick="openFriendCharPreview(1)">
+          <span style="font-size:26px;color:#444;">＋</span>
         </div>
-        <div class="friend-preview-bubble" id="fpb-1" onclick="openFriendCharPreview(1)">
-          <span style="font-size:20px;color:#444;">＋</span>
+        <div class="fpb-large-name" id="fpb-name-1"></div>
+        <div class="fpb-large" id="fpb-2" onclick="openFriendCharPreview(2)">
+          <span style="font-size:26px;color:#444;">＋</span>
         </div>
-        <div class="friend-preview-bubble" id="fpb-2" onclick="openFriendCharPreview(2)">
-          <span style="font-size:20px;color:#444;">＋</span>
-        </div>
+        <div class="fpb-large-name" id="fpb-name-2"></div>
       </div>
     </div>
   </div><!-- /home-main -->
