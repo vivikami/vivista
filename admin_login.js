@@ -112,6 +112,7 @@ function confirmName(){
   if(!name){ showToast('名前を入力してください'); return; }
   playerName = name;
   localStorage.setItem('bs_player_name', playerName);
+  if(window._firebaseReady) registerPlayerProfile();
   document.getElementById('name-screen').style.display='none';
   document.getElementById('friend-screen').style.display='none';
   const rnm=document.getElementById('rename-modal'); if(rnm) rnm.style.display='none';

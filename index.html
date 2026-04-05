@@ -490,7 +490,7 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 }
 .party-slot:hover .party-avatar{transform:scale(1.08);}
 .party-avatar{
-  width:56px;height:56px;border-radius:50%;
+  width:72px;height:72px;border-radius:50%;
   border:2.5px solid rgba(255,255,255,0.2);
   background:rgba(255,255,255,0.05);
   display:flex;align-items:center;justify-content:center;
@@ -1087,7 +1087,7 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 
   /* パーティスロット */
   #home-party-row { padding: 8px 12px; gap: 10px; }
-  .party-avatar { width: clamp(44px, 11vw, 58px); height: clamp(44px, 11vw, 58px); }
+  .party-avatar { width: clamp(56px, 14vw, 72px); height: clamp(56px, 14vw, 72px); }
   .party-label { font-size: clamp(9px, 2.5vw, 11px); }
 
   /* ボトムナビ */
@@ -1306,7 +1306,12 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   window.addEventListener('load', ()=>{
     if(isFirebaseConfigured()){
       window.initFirebase();
-      setTimeout(()=>{ if(window._firebaseReady && window.startOnlinePresence) window.startOnlinePresence(); }, 500);
+      setTimeout(()=>{
+        if(window._firebaseReady){
+          if(window.startOnlinePresence) window.startOnlinePresence();
+          if(window.registerPlayerProfile) window.registerPlayerProfile();
+        }
+      }, 500);
     }
   });
 </script>
@@ -1549,19 +1554,6 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   </div>
   <!-- フレンドタブ -->
   <div id="tab-content-friend" class="shop-body" style="gap:12px;">
-    <!-- 自分のコード -->
-    <div class="my-code-area">
-      <div class="my-code-label">📋 あなたのフレンドコード（友達に渡そう）</div>
-      <div class="my-code-text" id="my-friend-code" onclick="copyFriendCode()">コード生成中...</div>
-      <div class="my-code-copy" onclick="copyFriendCode()">📋 コピー</div>
-    </div>
-    <!-- フレンド追加 -->
-    <div class="friend-add-area">
-      <div class="friend-add-title">➕ フレンドを追加</div>
-      <div class="friend-add-desc">友達のフレンドコードを貼り付けてください</div>
-      <textarea class="friend-code-input" id="friend-add-input" placeholder="フレンドコードをここに貼り付け..."></textarea>
-      <button class="friend-add-btn" onclick="addFriend()">追加する</button>
-    </div>
     <!-- 名前でフレンド追加 -->
     <div class="friend-add-area">
       <div class="friend-add-title">🔍 名前で検索・追加</div>
@@ -1686,7 +1678,7 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
     <!-- 自分 -->
     <div class="party-slot">
       <div class="party-avatar me" id="party-me-avatar">
-        <canvas id="party-me-canvas" width="56" height="56" style="width:56px;height:56px;"></canvas>
+        <canvas id="party-me-canvas" width="72" height="72" style="width:72px;height:72px;"></canvas>
       </div>
       <div class="party-label me" id="party-me-label">あなた</div>
     </div>

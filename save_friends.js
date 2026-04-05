@@ -76,8 +76,8 @@ function updateFriendSlots(){
       av.className='friend-slot-avatar filled';
       av.innerHTML='';
       const brawler=BRAWLERS.find(b=>b.id===f.b);
-      const c=document.createElement('canvas');c.width=52;c.height=52;
-      if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,52),30);
+      const c=document.createElement('canvas');c.width=72;c.height=72;
+      if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,72),30);
       av.appendChild(c);
       // 削除ボタン
       const rmBtn=document.createElement('div');
@@ -222,7 +222,8 @@ function updatePartySlots(){
   const meCanvas = document.getElementById('party-me-canvas');
   const meLabel  = document.getElementById('party-me-label');
   if(meCanvas && selectedBrawler){
-    drawCharacterSprite(meCanvas, selectedBrawler, 56);
+    meCanvas.width=72; meCanvas.height=72;
+    drawCharacterSprite(meCanvas, selectedBrawler, 72);
   }
   if(meLabel) meLabel.textContent = playerName || 'あなた';
 
@@ -240,8 +241,8 @@ function updatePartySlots(){
       // キャラcanvas
       const brawler = BRAWLERS.find(b => b.id === f.b);
       const c = document.createElement('canvas');
-      c.width = 56; c.height = 56;
-      if(brawler) setTimeout(() => drawCharacterSprite(c, brawler, 56), 30);
+      c.width = 72; c.height = 72;
+      if(brawler) setTimeout(() => drawCharacterSprite(c, brawler, 72), 30);
       avatar.appendChild(c);
       // 削除ボタン
       const rm = document.createElement('div');
@@ -441,13 +442,9 @@ function updateMyPresence(){
 function openFriends(){
   hideAllScreens();
   document.getElementById('friend-screen').style.display='flex';
-  // 自分のコード表示
-  const myCode = generateFriendCode();
-  document.getElementById('my-friend-code').textContent = myCode;
   buildFriendList();
-  // Firebaseが設定済みならオンラインプレゼンス開始
   if(window._firebaseReady && !_myPresenceRef) startOnlinePresence();
-  else if(window._firebaseReady) updateMyPresence();
+  else if(window._firebaseReady){ updateMyPresence(); registerPlayerProfile(); }
 }
 
 function copyFriendCode(){
