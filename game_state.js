@@ -1,6 +1,5 @@
 // =========== GAME STATE & SELECT SCREEN ===========
 // ===== BUILD SELECT SCREEN =====
-let selectedBrawler = null;
 const grid = document.getElementById('char-grid');
 const gridWrap = document.getElementById('grid-wrap');
 
@@ -65,6 +64,10 @@ let playerLevel     = parseInt(localStorage.getItem('bs_level')||'1');
 let levelWins       = parseInt(localStorage.getItem('bs_level_wins')||'0');
 function saveLevel(){ localStorage.setItem('bs_level',String(playerLevel)); localStorage.setItem('bs_level_wins',String(levelWins)); }
 let friendSlots     = [null, null, null];
+// 選択キャラ復元
+const _savedBrawlerId = localStorage.getItem('bs_selected_brawler');
+let selectedBrawler = _savedBrawlerId ? (BRAWLERS.find(b => b.id === _savedBrawlerId) || null) : null;
+function saveSelectedBrawler(){ localStorage.setItem('bs_selected_brawler', selectedBrawler ? selectedBrawler.id : ''); }
 function saveTrophies(){ localStorage.setItem('bs_trophies', String(trophies)); }
 function saveCoins(){    localStorage.setItem('bs_coins',    String(coins)); }
 function saveGems(){     localStorage.setItem('bs_gems',     String(gemCount)); }

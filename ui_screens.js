@@ -74,7 +74,7 @@ function refreshHomeChar(){
     bigCanvas.style.width = sz + 'px'; bigCanvas.style.height = sz + 'px';
     // selectedBrawler をローカルに固定してから描画
     const _b = selectedBrawler;
-    requestAnimationFrame(() => drawCharacterSprite(bigCanvas, _b, sz));
+    setTimeout(() => drawCharacterSprite(bigCanvas, _b, sz), 30);
     if(selfLabel){
       selfLabel.textContent = playerName || _b.name;
       selfLabel.style.color = _b.col || '#ffcc00';
