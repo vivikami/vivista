@@ -69,23 +69,20 @@ function refreshHomeChar(){
   if(selectedBrawler){
     noChar.style.display='none';
     bigCanvas.style.display='block';
-    // CSSの min(38vw,180px) に合わせてサイズ計算
     const sz = Math.round(Math.min(window.innerWidth * 0.45, 220));
     bigCanvas.width = sz; bigCanvas.height = sz;
     bigCanvas.style.width = sz + 'px'; bigCanvas.style.height = sz + 'px';
-    setTimeout(() => drawCharacterSprite(bigCanvas, selectedBrawler, sz), 0);
+    // selectedBrawler をローカルに固定してから描画
+    const _b = selectedBrawler;
+    requestAnimationFrame(() => drawCharacterSprite(bigCanvas, _b, sz));
     if(selfLabel){
-      selfLabel.textContent = playerName || selectedBrawler.name;
-      selfLabel.style.color = selectedBrawler.col || '#ffcc00';
+      selfLabel.textContent = playerName || _b.name;
+      selfLabel.style.color = _b.col || '#ffcc00';
     }
-    const bubble=document.getElementById('home-char-bubble');
-    if(bubble) bubble.remove();
   } else {
     bigCanvas.style.display='none';
     noChar.style.display='flex';
-    if(selfLabel) selfLabel.textContent = playerName || '';
-    const bubble=document.getElementById('home-char-bubble');
-    if(bubble) bubble.remove();
+    if(selfLabel) selfLabel.textContent = '';
   }
 }
 
