@@ -69,10 +69,11 @@ function refreshHomeChar(){
   if(selectedBrawler){
     noChar.style.display='none';
     bigCanvas.style.display='block';
-    // canvas サイズに合わせて描画
-    const sz = bigCanvas.offsetWidth || Math.min(window.innerWidth*0.38, 180);
+    // CSSの min(38vw,180px) に合わせてサイズ計算
+    const sz = Math.round(Math.min(window.innerWidth * 0.38, 180));
     bigCanvas.width = sz; bigCanvas.height = sz;
-    drawCharacterSprite(bigCanvas, selectedBrawler, sz);
+    bigCanvas.style.width = sz + 'px'; bigCanvas.style.height = sz + 'px';
+    setTimeout(() => drawCharacterSprite(bigCanvas, selectedBrawler, sz), 0);
     if(selfLabel){
       selfLabel.textContent = playerName || selectedBrawler.name;
       selfLabel.style.color = selectedBrawler.col || '#ffcc00';

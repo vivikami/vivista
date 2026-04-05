@@ -528,14 +528,19 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   from{opacity:0;transform:translateY(8px);}
   to  {opacity:1;transform:translateY(0);}
 }
-/* 全部もらうボタン */
-#drop-collect-btn{
+/* 受け取るボタン */
+#drop-claim-btn{
   background:linear-gradient(135deg,#ffcc00,#ff9900);color:#1a0d00;border:none;
   border-radius:14px;padding:14px 40px;font-family:'Bebas Neue',sans-serif;
   font-size:20px;letter-spacing:3px;cursor:pointer;
   animation:fadeInUp .4s ease;
 }
-#drop-collect-btn:active{transform:scale(0.96);}
+#drop-claim-btn:active{transform:scale(0.96);}
+/* タップ結果ログ */
+#drop-tap-results{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  min-height:24px;max-width:340px;
+}
 
 
 
@@ -1771,12 +1776,13 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
 <div id="lucky-drop-screen" style="display:none">
   <div id="drop-header-row">
     <div id="drop-title-label">🎁 ラッキードロップ</div>
-    <div id="drop-progress">0 / 5</div>
+    <div id="drop-progress">タップ 0 / 5</div>
   </div>
-  <div id="drop-hint">✨ 玉をタップして開けよう！</div>
-  <div id="drop-orbs"></div>
-  <div id="drop-result-list"></div>
-  <button id="drop-collect-btn" onclick="claimAllDrops()" style="display:none">🎉 全部もらう！</button>
+  <div id="drop-hint">✨ 玉をタップして強化しよう！</div>
+  <canvas id="drop-canvas" width="180" height="180" style="cursor:pointer;border-radius:50%;"></canvas>
+  <div id="drop-current-tier" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#666;">？？？</div>
+  <div id="drop-tap-results"></div>
+  <button id="drop-claim-btn" style="display:none">🎉 受け取る！</button>
   <button class="gm-close" onclick="showHome()" style="width:200px;margin-top:4px;font-size:13px;">やめる</button>
 </div>
 

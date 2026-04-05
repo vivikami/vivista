@@ -156,6 +156,8 @@ function parseFriendCode(code){
 
 // ===== フレンドプレビューバブル（ホーム画面キャラ横） =====
 function updateFriendPreviewBubbles(){
+  // バブルの実サイズ: CSS min(22vw,120px)
+  const sz = Math.round(Math.min(window.innerWidth * 0.22, 120));
   for(let i=0;i<3;i++){
     const f = friendSlots[i];
     const bubble = document.getElementById('fpb-'+i);
@@ -165,10 +167,9 @@ function updateFriendPreviewBubbles(){
     if(f){
       bubble.className='fpb-large filled';
       const brawler=BRAWLERS.find(b=>b.id===f.b);
-      const sz=parseInt(getComputedStyle(bubble).width)||100;
       const c=document.createElement('canvas');
-      c.width=sz;c.height=sz;
-      c.style.width=sz+'px';c.style.height=sz+'px';
+      c.width=sz; c.height=sz;
+      c.style.width=sz+'px'; c.style.height=sz+'px';
       if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,sz),30);
       bubble.appendChild(c);
       if(nameEl){ nameEl.textContent=f.n; nameEl.style.color=f.bc||'#4fc3f7'; }
