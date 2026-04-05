@@ -382,6 +382,14 @@ function startOnlinePresence(){
   onDiscFn(_myPresenceRef).remove();
   registerPlayerProfile();
 
+  // 30秒ごとにtsを更新（ハートビート）
+  if(window._heartbeatTimer) clearInterval(window._heartbeatTimer);
+  window._heartbeatTimer = setInterval(()=>{
+    if(_myPresenceRef && window._set && window._serverTimestamp){
+      window._set(_myPresenceRef, {...presenceData, ts: window._serverTimestamp()});
+    }
+  }, 30000);
+
   // オンラインユーザー監視
   _onlineUsersRef = refFn(db, 'online');
   _onlineListener = onValueFn(_onlineUsersRef, (snapshot)=>{
@@ -402,7 +410,9 @@ function updateFirebaseStatus(ready){
 }
 
 function updateOnlineUI(data){
-  const users = Object.values(data);
+  const STALE_MS = 3 * 60 * 1000; // 3分以上古いエントリは除外
+  const now = Date.now();
+  const users = Object.values(data).filter(u => !u.ts || (now - u.ts) < STALE_MS);
   const count = users.length;
   const el = document.getElementById('online-count');
   if(el) el.textContent = count;
