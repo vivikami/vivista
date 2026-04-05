@@ -70,7 +70,7 @@ function refreshHomeChar(){
     noChar.style.display='none';
     bigCanvas.style.display='block';
     // CSSの min(38vw,180px) に合わせてサイズ計算
-    const sz = Math.round(Math.min(window.innerWidth * 0.38, 180));
+    const sz = Math.round(Math.min(window.innerWidth * 0.45, 220));
     bigCanvas.width = sz; bigCanvas.height = sz;
     bigCanvas.style.width = sz + 'px'; bigCanvas.style.height = sz + 'px';
     setTimeout(() => drawCharacterSprite(bigCanvas, selectedBrawler, sz), 0);

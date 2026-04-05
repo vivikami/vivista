@@ -499,6 +499,30 @@ function openFriends(){
   buildFriendList();
   if(window._firebaseReady && !_myPresenceRef) startOnlinePresence();
   else if(window._firebaseReady){ updateMyPresence(); registerPlayerProfile(); }
+  refreshFriendProfiles();
+}
+
+// Firebase から各フレンドの最新プロフィール（キャラ）を取得して反映
+function refreshFriendProfiles(){
+  if(!window._firebaseReady || !window._db || friends.length===0) return;
+  friends.forEach((f, idx)=>{
+    const key='p_'+Array.from(f.n).map(c=>c.charCodeAt(0).toString(16)).join('').slice(0,30);
+    window._onValue(window._ref(window._db,'players/'+key),(snap)=>{
+      const data=snap.val();
+      if(!data||data.name!==f.n) return;
+      let changed=false;
+      if(data.brawler && data.brawler!==f.b){ f.b=data.brawler; changed=true; }
+      if(data.brawlerCol && data.brawlerCol!==f.bc){ f.bc=data.brawlerCol; changed=true; }
+      if(data.trophies != null && data.trophies!==f.t){ f.t=data.trophies; changed=true; }
+      if(changed){
+        saveFriends();
+        buildFriendList();
+        // スロットに入っていれば表示も更新
+        const slotIdx=friendSlots.findIndex(s=>s&&s.n===f.n);
+        if(slotIdx>=0){ friendSlots[slotIdx]=f; updatePartySlots(); }
+      }
+    },{onlyOnce:true});
+  });
 }
 
 function copyFriendCode(){

@@ -626,20 +626,70 @@ function _afterTap(tier,rolledIdx,upgraded){
     document.getElementById('drop-hint').textContent='タップして強化しよう！';
     _dropBusy=false;
   } else {
-    // 5回完了
-    document.getElementById('drop-hint').textContent='🎉 完成！';
-    const prize=tier.prizes[Math.floor(Math.random()*tier.prizes.length)];
-    document.getElementById('drop-claim-btn').style.display='block';
-    document.getElementById('drop-claim-btn').onclick=()=>claimFinalDrop(prize);
+    // 5回完了 → キャラ or 通常賞品を決定
     document.getElementById('drop-canvas').onclick=null;
+    const prize = _decideFinalPrize(tier, _dropBestIdx);
+    if(prize.type==='brawler'){
+      _showBrawlerReveal(prize, tier);
+    } else {
+      document.getElementById('drop-hint').textContent='🎉 完成！';
+      document.getElementById('drop-claim-btn').style.display='block';
+      document.getElementById('drop-claim-btn').onclick=()=>claimFinalDrop(prize);
+    }
     _dropBusy=false;
   }
 }
 
+// ティアに応じてキャラ or 通常賞品を決める
+function _decideFinalPrize(tier, tierIdx){
+  // キャラが出る確率: RARE10% SR15% EPIC25% MYTHIC40% LEGENDARY60%
+  const brawlerChance = [0.10, 0.15, 0.25, 0.40, 0.60][tierIdx] || 0;
+  const rarityMap = ['レア','スーパーレア','エピック','ミシック','レジェンダリー'];
+  if(Math.random() < brawlerChance){
+    const targetRarity = rarityMap[tierIdx];
+    const pool = BRAWLERS.filter(b => b.rarity === targetRarity && !unlockedBrawlers.includes(b.id));
+    if(pool.length > 0){
+      const brawler = pool[Math.floor(Math.random() * pool.length)];
+      return { type:'brawler', brawler, label: brawler.name };
+    }
+  }
+  // 通常賞品
+  return tier.prizes[Math.floor(Math.random() * tier.prizes.length)];
+}
+
+// キャラ獲得演出
+function _showBrawlerReveal(prize, tier){
+  const cv = document.getElementById('drop-canvas');
+  const ctx = cv.getContext('2d');
+  const S = DROP_CV_SIZE;
+  // キャラをcanvasに描画
+  cv.width = S; cv.height = S;
+  drawCharacterSprite(cv, prize.brawler, S);
+
+  // 枠にキャラ色でグロー
+  cv.style.filter = `drop-shadow(0 0 20px ${prize.brawler.col||tier.col})`;
+
+  document.getElementById('drop-current-tier').textContent = prize.brawler.name;
+  document.getElementById('drop-current-tier').style.color = prize.brawler.col || tier.col;
+  document.getElementById('drop-hint').textContent =
+    '🎉 NEW キャラ！ ' + prize.brawler.rarity;
+  document.getElementById('drop-claim-btn').textContent = '🎉 ' + prize.brawler.name + ' をゲット！';
+  document.getElementById('drop-claim-btn').style.background =
+    `linear-gradient(135deg,${prize.brawler.col||tier.col},${tier.col})`;
+  document.getElementById('drop-claim-btn').style.display = 'block';
+  document.getElementById('drop-claim-btn').onclick = () => claimFinalDrop(prize);
+}
+
 function claimFinalDrop(prize){
-  if(prize.type==='coins'){coins+=prize.amount;saveCoins();}
-  else if(prize.type==='gems'){gemCount+=prize.amount;saveGems();}
-  luckyDrops--;saveDrops();
+  if(prize.type==='brawler'){
+    unlockedBrawlers.push(prize.brawler.id);
+    localStorage.setItem('bs_unlocked', JSON.stringify(unlockedBrawlers));
+    rebuildSelectScreen();
+    document.getElementById('drop-claim-btn').textContent='🎉 受け取る！';
+    document.getElementById('drop-canvas').style.filter='';
+  } else if(prize.type==='coins'){ coins+=prize.amount; saveCoins(); }
+  else if(prize.type==='gems'){ gemCount+=prize.amount; saveGems(); }
+  luckyDrops--; saveDrops();
   updateAllDisplays();
   addQuestProgress('drop');
   showHome();
