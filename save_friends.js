@@ -154,6 +154,48 @@ function parseFriendCode(code){
 
 
 
+// ===== フレンドプレビューバブル（ホーム画面キャラ横） =====
+function updateFriendPreviewBubbles(){
+  for(let i=0;i<3;i++){
+    const f = friendSlots[i];
+    const bubble = document.getElementById('fpb-'+i);
+    if(!bubble) continue;
+    bubble.innerHTML='';
+    if(f){
+      bubble.className='friend-preview-bubble filled';
+      const brawler=BRAWLERS.find(b=>b.id===f.b);
+      const c=document.createElement('canvas');
+      c.width=54;c.height=54;
+      if(brawler) setTimeout(()=>drawCharacterSprite(c,brawler,54),30);
+      bubble.appendChild(c);
+      // 名前ラベル
+      const nm=document.createElement('div');
+      nm.className='fpb-name';
+      nm.textContent=f.n;
+      bubble.appendChild(nm);
+    } else {
+      bubble.className='friend-preview-bubble';
+      bubble.innerHTML='<span style="font-size:20px;color:#444;">＋</span>';
+    }
+  }
+}
+
+function openFriendCharPreview(idx){
+  const f=friendSlots[idx];
+  if(!f){ openPartyPick(idx); return; }
+  const brawler=BRAWLERS.find(b=>b.id===f.b);
+  const canvas=document.getElementById('fcp-canvas');
+  canvas.width=160;canvas.height=160;
+  canvas.style.borderRadius='50%';
+  canvas.style.background=(brawler?brawler.col+'22':'#88888822');
+  if(brawler) setTimeout(()=>drawCharacterSprite(canvas,brawler,160),30);
+  document.getElementById('fcp-name').textContent=f.n;
+  document.getElementById('fcp-name').style.color=f.bc||'#fff';
+  document.getElementById('fcp-brawler').textContent=brawler?brawler.name:'—';
+  document.getElementById('fcp-trophy').textContent='🏆 '+(f.t||0)+' トロフィー';
+  document.getElementById('friend-char-preview').style.display='flex';
+}
+
 // ===== HOME PARTY SYSTEM =====
 // friendSlots は既存のものを流用（select screen と共有）
 
@@ -267,6 +309,7 @@ function updatePartySlots(){
       slot.onclick = () => openPartyPick(i);
     }
   }
+  updateFriendPreviewBubbles();
 }
 
 

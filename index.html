@@ -524,6 +524,44 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   font-size:8px;display:flex;align-items:center;justify-content:center;
   cursor:pointer;z-index:2;
 }
+/* ===== フレンドプレビューバブル（キャラ横） ===== */
+#friend-preview-col{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:8px;z-index:5;
+}
+.friend-preview-bubble{
+  width:54px;height:54px;border-radius:50%;
+  background:rgba(0,0,0,0.45);border:2px dashed rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;transition:.15s;position:relative;
+}
+.friend-preview-bubble.filled{
+  border:2px solid #4fc3f7;
+  box-shadow:0 0 10px rgba(79,195,247,0.4);border-style:solid;
+}
+.friend-preview-bubble:active{transform:scale(0.9);}
+.fpb-name{
+  position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+  font-size:9px;color:#4fc3f7;white-space:nowrap;letter-spacing:.5px;
+  max-width:70px;overflow:hidden;text-overflow:ellipsis;
+}
+/* フレンドキャラプレビューモーダル */
+#friend-char-preview{
+  position:fixed;inset:0;z-index:350;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+}
+.fcp-panel{
+  background:linear-gradient(160deg,#0d1420,#1a0d2e);
+  border:1px solid rgba(255,255,255,0.12);border-radius:20px;
+  padding:24px 28px;display:flex;flex-direction:column;
+  align-items:center;gap:10px;min-width:200px;
+}
+.fcp-close{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;padding:8px 24px;border-radius:10px;
+  cursor:pointer;font-size:13px;margin-top:4px;
+}
 /* パーティ選択モーダル */
 #party-pick-modal{
   position:fixed;inset:0;z-index:300;display:none;
@@ -1670,8 +1708,31 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
         <div style="font-size:48px;">👆</div>
         <div>キャラを選ぼう</div>
       </div>
+      <!-- フレンドプレビューバブル -->
+      <div id="friend-preview-col">
+        <div class="friend-preview-bubble" id="fpb-0" onclick="openFriendCharPreview(0)">
+          <span style="font-size:20px;color:#444;">＋</span>
+        </div>
+        <div class="friend-preview-bubble" id="fpb-1" onclick="openFriendCharPreview(1)">
+          <span style="font-size:20px;color:#444;">＋</span>
+        </div>
+        <div class="friend-preview-bubble" id="fpb-2" onclick="openFriendCharPreview(2)">
+          <span style="font-size:20px;color:#444;">＋</span>
+        </div>
+      </div>
     </div>
   </div><!-- /home-main -->
+
+  <!-- フレンドキャラプレビューモーダル -->
+  <div id="friend-char-preview" onclick="this.style.display='none'">
+    <div class="fcp-panel" onclick="event.stopPropagation()">
+      <canvas id="fcp-canvas" width="160" height="160" style="width:160px;height:160px;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.6))"></canvas>
+      <div id="fcp-name" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:2px;"></div>
+      <div id="fcp-brawler" style="font-size:12px;color:#888;letter-spacing:1px;"></div>
+      <div id="fcp-trophy" style="font-size:14px;color:#ffcc00;"></div>
+      <button class="fcp-close" onclick="document.getElementById('friend-char-preview').style.display='none'">閉じる</button>
+    </div>
+  </div>
 
   <!-- パーティスロット -->
   <div id="home-party-row">
