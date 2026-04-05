@@ -336,6 +336,7 @@ function startOnlinePresence(){
   };
   setFn(_myPresenceRef, presenceData);
   onDiscFn(_myPresenceRef).remove();
+  registerPlayerProfile();
 
   // オンラインユーザー監視
   _onlineUsersRef = refFn(db, 'online');
@@ -481,6 +482,63 @@ function addFriend(){
   document.getElementById('friend-add-input').value='';
   buildFriendList();
   showToast(`✅ ${data.n} をフレンドに追加しました！`);
+}
+
+// プレイヤープロフィールをFirebaseに登録（名前検索用）
+function registerPlayerProfile(){
+  if(!window._firebaseReady || !window._db) return;
+  if(!playerName) return;
+  const key = 'p_' + Array.from(playerName).map(c=>c.charCodeAt(0).toString(16)).join('').slice(0,30);
+  const profileRef = window._ref(window._db, 'players/' + key);
+  window._set(profileRef, {
+    name: playerName,
+    trophies: trophies,
+    brawler: selectedBrawler ? selectedBrawler.id : 'sasha',
+    brawlerCol: selectedBrawler ? selectedBrawler.col : '#e8a020',
+    updatedAt: window._serverTimestamp ? window._serverTimestamp() : Date.now()
+  });
+}
+
+// 名前でフレンドを検索して追加
+function searchAndAddFriendByName(){
+  const nameInput = document.getElementById('friend-name-input');
+  const searchName = nameInput ? nameInput.value.trim() : '';
+  if(!searchName){ showToast('名前を入力してください'); return; }
+  if(searchName === playerName){ showToast('自分は追加できません'); return; }
+  if(friends.some(f => f.n === searchName)){ showToast('すでにフレンドです'); return; }
+  if(!window._firebaseReady || !window._db){
+    showToast('❌ Firebase未接続のため名前検索できません');
+    return;
+  }
+  showToast('🔍 検索中...');
+  const key = 'p_' + Array.from(searchName).map(c=>c.charCodeAt(0).toString(16)).join('').slice(0,30);
+  const profileRef = window._ref(window._db, 'players/' + key);
+  window._onValue(profileRef, (snapshot) => {
+    const data = snapshot.val();
+    if(data && data.name === searchName){
+      _addFriendFromProfile(data);
+      if(nameInput) nameInput.value = '';
+    } else {
+      _searchFriendInRankings(searchName, nameInput);
+    }
+  }, {onlyOnce: true});
+}
+
+function _addFriendFromProfile(data){
+  friends.push({ n:data.name, t:data.trophies||0, b:data.brawler||'sasha', bc:data.brawlerCol||'#e8a020', addedAt:Date.now() });
+  saveFriends();
+  buildFriendList();
+  showToast(`✅ ${data.name} をフレンドに追加しました！`);
+}
+
+function _searchFriendInRankings(searchName, nameInput){
+  const rankRef = window._ref(window._db, 'rankings');
+  window._onValue(rankRef, (snapshot) => {
+    const found = Object.values(snapshot.val()||{}).find(u => u.name === searchName);
+    if(!found){ showToast(`❌ 「${searchName}」が見つかりません`); return; }
+    _addFriendFromProfile({ name:found.name, trophies:found.trophies, brawler:found.brawler, brawlerCol:found.brawlerCol });
+    if(nameInput) nameInput.value = '';
+  }, {onlyOnce: true});
 }
 
 function removeFriend(idx){

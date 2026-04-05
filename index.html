@@ -746,6 +746,13 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
   font-size:16px;letter-spacing:2px;cursor:pointer;transition:.15s;
 }
 .friend-add-btn:active{transform:scale(0.97);}
+.friend-add-btn.green{background:linear-gradient(135deg,#1b5e20,#43a047);}
+.friend-name-input{
+  width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;color:#fff;font-size:13px;padding:10px 12px;
+  box-sizing:border-box;
+}
+.friend-name-input:focus{outline:none;border-color:#4fc3f7;}
 .my-code-area{
   background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
   border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;
@@ -1554,6 +1561,13 @@ body{background:#0a0a0f;font-family:'Barlow Condensed',sans-serif;overflow:hidde
       <div class="friend-add-desc">友達のフレンドコードを貼り付けてください</div>
       <textarea class="friend-code-input" id="friend-add-input" placeholder="フレンドコードをここに貼り付け..."></textarea>
       <button class="friend-add-btn" onclick="addFriend()">追加する</button>
+    </div>
+    <!-- 名前でフレンド追加 -->
+    <div class="friend-add-area">
+      <div class="friend-add-title">🔍 名前で検索・追加</div>
+      <div class="friend-add-desc">プレイヤー名を入力（Firebase接続が必要）</div>
+      <input class="friend-name-input" id="friend-name-input" type="text" placeholder="プレイヤー名を入力..." maxlength="20">
+      <button class="friend-add-btn green" onclick="searchAndAddFriendByName()">検索して追加</button>
     </div>
     <!-- フレンドリスト -->
     <div class="friend-section">フレンドリスト</div>
